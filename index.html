@@ -1,0 +1,3467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>DinoChat</title>
+
+<style>
+/* =========================================================
+   DINOCCHAT — LIGHT SOCIAL UI
+   ========================================================= */
+
+:root{
+    --bg:#effaf3;
+    --card:#ffffff;
+    --card2:#f7fdf9;
+    --text:#173526;
+    --muted:#688073;
+    --primary:#18864b;
+    --primary-dark:#0f6d3b;
+    --soft:#dcf4e5;
+    --border:#cde6d6;
+    --danger:#d9534f;
+    --shadow:0 12px 35px rgba(35,100,65,.10);
+    --pattern:none;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    margin:0;
+    min-height:100%;
+}
+
+body{
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    color:var(--text);
+    background-color:var(--bg);
+    background-image:var(--pattern);
+    transition:.25s ease;
+}
+
+button,
+input,
+textarea{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+/* =========================================================
+   INTRO
+   ========================================================= */
+
+#intro{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+
+    display:grid;
+    place-items:center;
+
+    background:var(--bg);
+
+    text-align:center;
+
+    transition:.6s ease;
+}
+
+.intro-box{
+    padding:30px;
+}
+
+.intro-dino{
+    font-size:78px;
+
+    animation:
+        introDino 1s ease-in-out infinite alternate;
+}
+
+@keyframes introDino{
+    from{
+        transform:translateY(0);
+    }
+
+    to{
+        transform:translateY(-14px);
+    }
+}
+
+.intro-box h1{
+    margin:18px 0 8px;
+
+    font-size:
+        clamp(
+            38px,
+            7vw,
+            80px
+        );
+
+    line-height:.95;
+
+    letter-spacing:-4px;
+
+    color:var(--primary);
+}
+
+.intro-box p{
+    color:var(--muted);
+}
+
+/* =========================================================
+   APP
+   ========================================================= */
+
+#app{
+    display:none;
+    min-height:100vh;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar{
+    position:fixed;
+
+    top:0;
+    bottom:0;
+    left:0;
+
+    width:250px;
+
+    padding:20px;
+
+    background:rgba(255,255,255,.90);
+
+    backdrop-filter:blur(18px);
+
+    border-right:1px solid var(--border);
+
+    z-index:100;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:11px;
+
+    margin-bottom:25px;
+}
+
+.brand-icon{
+    width:46px;
+    height:46px;
+
+    display:grid;
+    place-items:center;
+
+    border-radius:15px;
+
+    background:var(--soft);
+
+    font-size:26px;
+}
+
+.brand-name{
+    font-weight:800;
+}
+
+.brand-sub{
+    color:var(--muted);
+    font-size:11px;
+    margin-top:2px;
+}
+
+.nav{
+    width:100%;
+
+    border:0;
+
+    background:transparent;
+
+    color:var(--muted);
+
+    text-align:left;
+
+    padding:12px 13px;
+
+    margin:3px 0;
+
+    border-radius:12px;
+
+    transition:.2s;
+}
+
+.nav:hover{
+    background:var(--soft);
+    color:var(--primary-dark);
+}
+
+.nav.active{
+    background:var(--soft);
+    color:var(--primary-dark);
+    font-weight:800;
+}
+
+.profile-mini{
+    position:absolute;
+
+    left:20px;
+    right:20px;
+    bottom:18px;
+
+    padding:12px;
+
+    border:1px solid var(--border);
+
+    border-radius:15px;
+
+    background:var(--card2);
+}
+
+.avatar{
+    width:38px;
+    height:38px;
+
+    border-radius:50%;
+
+    display:grid;
+    place-items:center;
+
+    background:var(--soft);
+
+    color:var(--primary);
+
+    font-weight:800;
+
+    float:left;
+
+    margin-right:9px;
+}
+
+.profile-mini strong,
+.profile-mini small{
+    display:block;
+}
+
+.profile-mini small{
+    color:var(--muted);
+    font-size:10px;
+}
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+main{
+    margin-left:250px;
+
+    width:calc(100% - 250px);
+
+    min-height:100vh;
+}
+
+.topbar{
+    height:78px;
+
+    position:sticky;
+    top:0;
+
+    z-index:50;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 28px;
+
+    background:rgba(239,250,243,.88);
+
+    backdrop-filter:blur(15px);
+
+    border-bottom:1px solid var(--border);
+}
+
+.top-title{
+    margin:0;
+
+    font-size:20px;
+}
+
+.top-sub{
+    margin:3px 0 0;
+
+    color:var(--muted);
+
+    font-size:12px;
+}
+
+.online{
+    color:var(--muted);
+
+    font-size:12px;
+}
+
+.online-dot{
+    display:inline-block;
+
+    width:8px;
+    height:8px;
+
+    border-radius:50%;
+
+    background:#36b66b;
+
+    margin-right:6px;
+}
+
+#content{
+    padding:28px;
+}
+
+/* =========================================================
+   MOBILE MENU
+   ========================================================= */
+
+.mobile-menu{
+    display:none;
+
+    border:1px solid var(--border);
+
+    background:var(--card);
+
+    border-radius:10px;
+
+    padding:8px 11px;
+
+    margin-right:10px;
+}
+
+/* =========================================================
+   PAGES
+   ========================================================= */
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero{
+    padding:42px;
+
+    min-height:390px;
+
+    display:grid;
+
+    grid-template-columns:
+        minmax(0,1.2fr)
+        minmax(240px,.8fr);
+
+    align-items:center;
+
+    gap:25px;
+
+    border:1px solid var(--border);
+
+    border-radius:27px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #dff5e7,
+            #effaf3,
+            #eaf5ff
+        );
+
+    box-shadow:var(--shadow);
+}
+
+.badge{
+    display:inline-block;
+
+    padding:7px 11px;
+
+    border-radius:99px;
+
+    background:var(--soft);
+
+    color:var(--primary-dark);
+
+    font-size:10px;
+
+    font-weight:800;
+
+    letter-spacing:.3px;
+}
+
+.hero h1{
+    margin:18px 0;
+
+    font-size:
+        clamp(
+            42px,
+            6vw,
+            72px
+        );
+
+    line-height:.95;
+
+    letter-spacing:-4px;
+}
+
+.hero h1 span{
+    color:var(--primary);
+}
+
+.hero p{
+    max-width:570px;
+
+    color:var(--muted);
+
+    line-height:1.7;
+}
+
+.actions{
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:9px;
+
+    margin-top:22px;
+}
+
+.btn{
+    border:1px solid var(--border);
+
+    background:var(--card);
+
+    color:var(--text);
+
+    padding:11px 16px;
+
+    border-radius:12px;
+
+    font-weight:700;
+}
+
+.btn:hover{
+    border-color:var(--primary);
+}
+
+.btn.primary{
+    background:var(--primary);
+
+    color:white;
+
+    border-color:var(--primary);
+}
+
+.hero-dino{
+    display:grid;
+    place-items:center;
+}
+
+.dino-circle{
+    width:190px;
+    height:190px;
+
+    border-radius:50%;
+
+    display:grid;
+    place-items:center;
+
+    background:rgba(255,255,255,.75);
+
+    box-shadow:var(--shadow);
+
+    font-size:92px;
+
+    animation:
+        floatingDino 2.5s ease-in-out infinite;
+}
+
+@keyframes floatingDino{
+    0%,100%{
+        transform:translateY(0) rotate(-2deg);
+    }
+
+    50%{
+        transform:translateY(-10px) rotate(2deg);
+    }
+}
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+.section-title{
+    margin:30px 0 14px;
+}
+
+.section-title h2{
+    margin:0;
+}
+
+.section-title p{
+    margin:4px 0;
+
+    color:var(--muted);
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,minmax(0,1fr));
+
+    gap:14px;
+}
+
+.card{
+    border:1px solid var(--border);
+
+    background:var(--card);
+
+    border-radius:18px;
+
+    padding:20px;
+
+    box-shadow:
+        0 5px 20px rgba(40,100,65,.05);
+
+    transition:.2s ease;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+
+    box-shadow:var(--shadow);
+}
+
+.card h3{
+    margin:10px 0 6px;
+}
+
+.card p{
+    color:var(--muted);
+
+    line-height:1.5;
+}
+
+/* =========================================================
+   CHAT
+   ========================================================= */
+
+.chat-layout{
+    display:grid;
+
+    grid-template-columns:
+        minmax(0,1fr)
+        270px;
+
+    gap:16px;
+}
+
+.chat-box{
+    height:650px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    overflow:hidden;
+
+    border:1px solid var(--border);
+
+    border-radius:19px;
+
+    background:var(--card);
+}
+
+.chat-header{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:16px 18px;
+
+    border-bottom:1px solid var(--border);
+}
+
+.chat-header strong{
+    display:block;
+}
+
+.chat-header small{
+    color:var(--muted);
+}
+
+.chat-actions{
+    color:var(--muted);
+}
+
+.messages{
+    flex:1;
+
+    overflow:auto;
+
+    padding:18px;
+
+    background:var(--bg);
+}
+
+.empty-chat{
+    text-align:center;
+
+    padding:90px 10px;
+
+    color:var(--muted);
+}
+
+.empty-chat-icon{
+    font-size:55px;
+}
+
+.message{
+    display:flex;
+
+    gap:8px;
+
+    max-width:82%;
+
+    margin-bottom:14px;
+}
+
+.message.mine{
+    margin-left:auto;
+
+    flex-direction:row-reverse;
+}
+
+.bubble{
+    padding:9px 12px;
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    background:var(--card);
+}
+
+.mine .bubble{
+    background:var(--soft);
+}
+
+.message-name{
+    font-size:12px;
+
+    font-weight:800;
+}
+
+.message-time{
+    margin-left:7px;
+
+    color:var(--muted);
+
+    font-size:10px;
+}
+
+.message-text{
+    margin:5px 0 0;
+
+    white-space:pre-wrap;
+
+    font-size:13px;
+}
+
+.message-controls{
+    margin-top:7px;
+}
+
+.message-controls button{
+    border:0;
+
+    background:transparent;
+
+    color:var(--muted);
+
+    font-size:10px;
+
+    padding:0 4px;
+}
+
+.composer{
+    display:flex;
+
+    gap:8px;
+
+    padding:12px;
+
+    border-top:1px solid var(--border);
+}
+
+.composer textarea{
+    flex:1;
+
+    resize:none;
+
+    min-height:42px;
+
+    max-height:130px;
+
+    padding:10px;
+
+    border:1px solid var(--border);
+
+    border-radius:12px;
+
+    background:var(--card2);
+
+    color:var(--text);
+
+    outline:none;
+}
+
+.composer textarea:focus{
+    border-color:var(--primary);
+}
+
+.send-button{
+    width:44px;
+
+    border:0;
+
+    border-radius:12px;
+
+    background:var(--primary);
+
+    color:white;
+}
+
+/* =========================================================
+   MANGA / REELS
+   ========================================================= */
+
+.page-head{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:end;
+
+    gap:15px;
+
+    margin-bottom:20px;
+}
+
+.page-head h1{
+    margin:8px 0 3px;
+}
+
+.page-head p{
+    margin:0;
+
+    color:var(--muted);
+}
+
+.manga-grid,
+.feed-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,minmax(0,1fr));
+
+    gap:16px;
+}
+
+.media-cover{
+    height:190px;
+
+    display:grid;
+
+    place-items:center;
+
+    font-size:60px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--soft),
+            var(--bg)
+        );
+}
+
+.item{
+    overflow:hidden;
+
+    padding:0;
+}
+
+.item-info{
+    padding:14px;
+}
+
+.item-info h3{
+    margin:0 0 5px;
+}
+
+.item-info p{
+    margin:0 0 10px;
+}
+
+/* =========================================================
+   SCORES
+   ========================================================= */
+
+.score-card{
+    display:flex;
+
+    align-items:center;
+
+    gap:16px;
+}
+
+.score-number{
+    font-size:34px;
+
+    font-weight:900;
+}
+
+.coins{
+    margin-left:auto;
+
+    font-size:15px;
+}
+
+/* =========================================================
+   ROWS
+   ========================================================= */
+
+.row{
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:15px;
+
+    padding:14px;
+
+    border-bottom:1px solid var(--border);
+}
+
+.row:last-child{
+    border-bottom:0;
+}
+
+/* =========================================================
+   ACCOUNT
+   ========================================================= */
+
+.account-card{
+    max-width:650px;
+}
+
+.input-label{
+    display:block;
+
+    margin-top:15px;
+
+    font-size:12px;
+
+    font-weight:800;
+}
+
+.input{
+    width:100%;
+
+    padding:12px;
+
+    margin-top:6px;
+
+    border:1px solid var(--border);
+
+    border-radius:12px;
+
+    background:var(--card2);
+
+    color:var(--text);
+
+    outline:none;
+}
+
+.input:focus{
+    border-color:var(--primary);
+}
+
+.readonly-note{
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin:7px 0 18px;
+}
+
+/* =========================================================
+   THEMES
+   ========================================================= */
+
+.theme-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(5,minmax(0,1fr));
+
+    gap:10px;
+}
+
+.theme-button{
+    border:2px solid transparent;
+
+    border-radius:14px;
+
+    padding:7px;
+
+    background:var(--card2);
+
+    text-align:left;
+}
+
+.theme-button:hover{
+    border-color:var(--primary);
+}
+
+.theme-button.selected{
+    border-color:var(--primary);
+}
+
+.theme-preview{
+    height:70px;
+
+    border-radius:9px;
+
+    margin-bottom:7px;
+}
+
+.theme-button strong,
+.theme-button small{
+    display:block;
+}
+
+.theme-button strong{
+    font-size:11px;
+}
+
+.theme-button small{
+    color:var(--muted);
+
+    font-size:10px;
+
+    margin-top:2px;
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+.setting-row{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:15px 0;
+
+    border-bottom:1px solid var(--border);
+}
+
+.setting-row:last-child{
+    border-bottom:0;
+}
+
+.setting-title{
+    font-weight:800;
+}
+
+.setting-description{
+    display:block;
+
+    margin-top:3px;
+
+    color:var(--muted);
+
+    font-size:11px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media(max-width:1100px){
+
+    .grid,
+    .manga-grid,
+    .feed-grid{
+        grid-template-columns:
+            repeat(2,minmax(0,1fr));
+    }
+
+    .theme-grid{
+        grid-template-columns:
+            repeat(3,minmax(0,1fr));
+    }
+
+    .chat-layout{
+        grid-template-columns:1fr;
+    }
+
+    .chat-side-card{
+        display:none;
+    }
+}
+
+@media(max-width:750px){
+
+    .sidebar{
+        transform:translateX(-105%);
+
+        transition:.25s ease;
+    }
+
+    .sidebar.open{
+        transform:translateX(0);
+    }
+
+    main{
+        margin-left:0;
+
+        width:100%;
+    }
+
+    .mobile-menu{
+        display:block;
+    }
+
+    .topbar{
+        padding:0 14px;
+    }
+
+    #content{
+        padding:14px;
+    }
+
+    .hero{
+        grid-template-columns:1fr;
+
+        padding:27px;
+    }
+
+    .hero-dino{
+        margin-top:20px;
+    }
+
+    .grid,
+    .manga-grid,
+    .feed-grid,
+    .theme-grid{
+        grid-template-columns:1fr;
+    }
+
+    .page-head{
+        align-items:flex-start;
+
+        flex-direction:column;
+    }
+
+    .chat-box{
+        height:
+            calc(
+                100vh - 125px
+            );
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =======================================================
+     INTRO
+======================================================= -->
+
+<div id="intro">
+
+    <div class="intro-box">
+
+        <div class="intro-dino">
+            🦖
+        </div>
+
+        <h1>
+            JUST MAKE MANGA
+        </h1>
+
+        <p>
+            DinoChat is loading...
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- =======================================================
+     APPLICATION
+======================================================= -->
+
+<div id="app">
+
+
+    <!-- SIDEBAR -->
+
+    <aside
+        class="sidebar"
+        id="sidebar"
+    >
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                🦖
+            </div>
+
+            <div>
+
+                <div class="brand-name">
+                    DinoChat
+                </div>
+
+                <div class="brand-sub">
+                    Global social platform
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <nav id="navigation">
+
+            <button
+                class="nav active"
+                data-page="home"
+            >
+                🏠 Home
+            </button>
+
+            <button
+                class="nav"
+                data-page="chat"
+            >
+                💬 Dinosaur
+            </button>
+
+            <button
+                class="nav"
+                data-page="manga"
+            >
+                📚 Manga
+            </button>
+
+            <button
+                class="nav"
+                data-page="reels"
+            >
+                🎬 Reels & Snaps
+            </button>
+
+            <button
+                class="nav"
+                data-page="history"
+            >
+                🕘 History
+            </button>
+
+            <button
+                class="nav"
+                data-page="scores"
+            >
+                🏆 Dino Scores
+            </button>
+
+            <button
+                class="nav"
+                data-page="account"
+            >
+                👤 Account
+            </button>
+
+            <button
+                class="nav"
+                data-page="settings"
+            >
+                ⚙️ Settings
+            </button>
+
+        </nav>
+
+
+        <div class="profile-mini">
+
+            <div
+                class="avatar"
+                id="sideAvatar"
+            >
+                D
+            </div>
+
+            <strong id="sideName">
+                DinoUser
+            </strong>
+
+            <small id="sideDinoId">
+                DINO-000000
+            </small>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main>
+
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                "
+            >
+
+                <button
+                    class="mobile-menu"
+                    id="mobileMenu"
+                >
+                    ☰
+                </button>
+
+                <div>
+
+                    <h2
+                        class="top-title"
+                        id="pageTitle"
+                    >
+                        Home
+                    </h2>
+
+                    <p
+                        class="top-sub"
+                        id="pageSubtitle"
+                    >
+                        Welcome to DinoChat
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="online">
+
+                <span class="online-dot"></span>
+
+                Online
+
+            </div>
+
+        </header>
+
+
+        <!-- CONTENT -->
+
+        <div id="content">
+
+
+            <!-- =================================================
+                 HOME
+            ================================================== -->
+
+            <section
+                class="page active"
+                id="page-home"
+            >
+
+                <div class="hero">
+
+                    <div>
+
+                        <span class="badge">
+                            🌍 GLOBAL SOCIAL PLATFORM
+                        </span>
+
+                        <h1>
+                            Chat.
+                            Share.
+                            <br>
+
+                            <span>
+                                Be a Dino.
+                            </span>
+                        </h1>
+
+                        <p>
+                            Connect with people around the
+                            world through Dinosaur, discover
+                            manga, share snaps and climb the
+                            Dino rankings.
+                        </p>
+
+
+                        <div class="actions">
+
+                            <button
+                                class="btn primary"
+                                onclick="openPage('chat')"
+                            >
+                                Open Dinosaur Chat →
+                            </button>
+
+                            <button
+                                class="btn"
+                                onclick="openPage('account')"
+                            >
+                                My Account
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="hero-dino">
+
+                        <div class="dino-circle">
+                            🦖
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-title">
+
+                    <h2>
+                        Explore DinoChat
+                    </h2>
+
+                    <p>
+                        Your social world in one place.
+                    </p>
+
+                </div>
+
+
+                <div class="grid">
+
+
+                    <button
+                        class="card"
+                        onclick="openPage('chat')"
+                    >
+
+                        <div
+                            style="font-size:30px"
+                        >
+                            💬
+                        </div>
+
+                        <h3>
+                            Dinosaur
+                        </h3>
+
+                        <p>
+                            Global community chat.
+                        </p>
+
+                    </button>
+
+
+                    <button
+                        class="card"
+                        onclick="openPage('manga')"
+                    >
+
+                        <div
+                            style="font-size:30px"
+                        >
+                            📚
+                        </div>
+
+                        <h3>
+                            Manga
+                        </h3>
+
+                        <p>
+                            Discover your manga world.
+                        </p>
+
+                    </button>
+
+
+                    <button
+                        class="card"
+                        onclick="openPage('reels')"
+                    >
+
+                        <div
+                            style="font-size:30px"
+                        >
+                            🎬
+                        </div>
+
+                        <h3>
+                            Reels & Snaps
+                        </h3>
+
+                        <p>
+                            Share short content.
+                        </p>
+
+                    </button>
+
+
+                    <button
+                        class="card"
+                        onclick="openPage('scores')"
+                    >
+
+                        <div
+                            style="font-size:30px"
+                        >
+                            🏆
+                        </div>
+
+                        <h3>
+                            Dino Scores
+                        </h3>
+
+                        <p>
+                            Climb the rankings.
+                        </p>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 DINOSAUR CHAT
+            ================================================== -->
+
+            <section
+                class="page"
+                id="page-chat"
+            >
+
+                <div class="chat-layout">
+
+
+                    <div class="chat-box">
+
+
+                        <div class="chat-header">
+
+                            <div>
+
+                                <strong>
+                                    🟢 Dinosaur
+                                </strong>
+
+                                <small>
+                                    Global community
+                                </small>
+
+                            </div>
+
+
+                            <div class="chat-actions">
+                                📞　📹　•••
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="messages"
+                            id="messages"
+                        ></div>
+
+
+                        <div class="composer">
+
+                            <textarea
+                                id="messageInput"
+                                rows="1"
+                                placeholder="Write a message..."
+                            ></textarea>
+
+                            <button
+                                class="send-button"
+                                id="sendButton"
+                            >
+                                ➤
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="card chat-side-card"
+                    >
+
+                        <div
+                            style="font-size:50px"
+                        >
+                            🦖
+                        </div>
+
+                        <h3>
+                            Dinosaur
+                        </h3>
+
+                        <p>
+                            Global DinoChat community.
+                        </p>
+
+                        <hr
+                            style="
+                                border:0;
+                                border-top:
+                                1px solid var(--border);
+                            "
+                        >
+
+                        <p>
+                            Be respectful.<br>
+                            No spam.<br>
+                            Keep DinoChat friendly.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 MANGA
+            ================================================== -->
+
+            <section
+                class="page"
+                id="page-manga"
+            >
+
+                <div class="page-head">
+
+                    <div>
+
+                        <span class="badge">
+                            📚 DISCOVER
+                        </span>
+
+                        <h1>
+                            Manga
+                        </h1>
+
+                        <p>
+                            Explore your manga world.
+                        </p>
+
+                    </div>
+
+                    <button
+                        class="btn primary"
+                        onclick="alert('Manga upload will be connected to the backend later.')"
+                    >
+                        ＋ Add Manga
+                    </button>
+
+                </div>
+
+
+                <div class="manga-grid">
+
+
+                    <article class="card item">
+
+                        <div class="media-cover">
+                            🌌
+                        </div>
+
+                        <div class="item-info">
+
+                            <h3>
+                                Cosmic Dino
+                            </h3>
+
+                            <p>
+                                Chapter 42
+                            </p>
+
+                            <button
+                                class="btn"
+                            >
+                                Read
+                            </button>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="card item">
+
+                        <div class="media-cover">
+                            ⚔️
+                        </div>
+
+                        <div class="item-info">
+
+                            <h3>
+                                Dino Warriors
+                            </h3>
+
+                            <p>
+                                Chapter 18
+                            </p>
+
+                            <button
+                                class="btn"
+                            >
+                                Read
+                            </button>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="card item">
+
+                        <div class="media-cover">
+                            🌸
+                        </div>
+
+                        <div class="item-info">
+
+                            <h3>
+                                Cherry Dino
+                            </h3>
+
+                            <p>
+                                Chapter 27
+                            </p>
+
+                            <button
+                                class="btn"
+                            >
+                                Read
+                            </button>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="card item">
+
+                        <div class="media-cover">
+                            🔥
+                        </div>
+
+                        <div class="item-info">
+
+                            <h3>
+                                Fire Rex
+                            </h3>
+
+                            <p>
+                                Chapter 63
+                            </p>
+
+                            <button
+                                class="btn"
+                            >
+                                Read
+                            </button>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 REELS
+            ================================================== -->
+
+            <section
+                class="page"
+                id="page-reels"
+            >
+
+                <div class="page-head">
+
+                    <div>
+
+                        <span class="badge">
+                            🎬 SHORT CONTENT
+                        </span>
+
+                        <h1>
+                            Reels & Snaps
+                        </h1>
+
+                        <p>
+                            Share moments with the community.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="feed-grid">
+
+
+                    <article class="card item">
+
+                        <div class="media-cover">
+                            🦖
+                        </div>
+
+                        <div class="item-info">
+
+                            <strong>
+                                DinoExplorer
+                            </strong>
+
+                            <p>
+                                Found the coolest
+                                dinosaur place!
+                            </p>
+
+                            <small>
+                                ❤️ 1.2K · 💬 84
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="card item">
+
+                        <div class="media-cover">
+                            🌴
+                        </div>
+
+                        <div class="item-info">
+
+                            <strong>
+                                MangaDino
+                            </strong>
+
+                            <p>
+                                New manga collection today 📚
+                            </p>
+
+                            <small>
+                                ❤️ 932 · 💬 52
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="card item">
+
+                        <div class="media-cover">
+                            🎮
+                        </div>
+
+                        <div class="item-info">
+
+                            <strong>
+                                GameDino
+                            </strong>
+
+                            <p>
+                                Gaming night with the squad.
+                            </p>
+
+                            <small>
+                                ❤️ 721 · 💬 31
+                            </small>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="card item">
+
+                        <div class="media-cover">
+                            😂
+                        </div>
+
+                        <div class="item-info">
+
+                            <strong>
+                                RexMemes
+                            </strong>
+
+                            <p>
+                                Dino meme of the day.
+                            </p>
+
+                            <small>
+                                ❤️ 2.4K · 💬 118
+                            </small>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 HISTORY
+            ================================================== -->
+
+            <section
+                class="page"
+                id="page-history"
+            >
+
+                <div class="page-head">
+
+                    <div>
+
+                        <span class="badge">
+                            🕘 ACTIVITY
+                        </span>
+
+                        <h1>
+                            History
+                        </h1>
+
+                        <p>
+                            Your recent activity.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div id="historyList"></div>
+
+            </section>
+
+
+            <!-- =================================================
+                 DINO SCORES
+            ================================================== -->
+
+            <section
+                class="page"
+                id="page-scores"
+            >
+
+                <div class="page-head">
+
+                    <div>
+
+                        <span class="badge">
+                            🏆 RANKING
+                        </span>
+
+                        <h1>
+                            Dino Scores
+                        </h1>
+
+                        <p>
+                            Build your Dino reputation.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card score-card">
+
+                    <div
+                        style="
+                            font-size:55px;
+                        "
+                    >
+                        🦖
+                    </div>
+
+                    <div>
+
+                        <small>
+                            Your Dino Score
+                        </small>
+
+                        <div
+                            class="score-number"
+                            id="scoreNumber"
+                        >
+                            100
+                        </div>
+
+                    </div>
+
+
+                    <div class="coins">
+                        🪙
+                        <b id="coinNumber">
+                            100
+                        </b>
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="card"
+                    style="margin-top:15px"
+                >
+
+                    <div class="row">
+
+                        <span>
+                            🥇
+                            <b>DinoKing</b>
+                        </span>
+
+                        <b>9842</b>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <span>
+                            🥈
+                            <b>RexMaster</b>
+                        </span>
+
+                        <b>8421</b>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <span>
+                            🥉
+                            <b>MangaRex</b>
+                        </span>
+
+                        <b>7936</b>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <span>
+                            🦖
+                            <b id="scoreName">
+                                DinoUser
+                            </b>
+                        </span>
+
+                        <b id="scoreRowNumber">
+                            100
+                        </b>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 ACCOUNT
+            ================================================== -->
+
+            <section
+                class="page"
+                id="page-account"
+            >
+
+                <div class="page-head">
+
+                    <div>
+
+                        <span class="badge">
+                            👤 PROFILE
+                        </span>
+
+                        <h1>
+                            Account
+                        </h1>
+
+                        <p>
+                            Manage your Dino identity.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="card account-card"
+                >
+
+                    <div
+                        class="dino-circle"
+                        style="
+                            width:90px;
+                            height:90px;
+                            font-size:45px;
+                            margin-bottom:20px;
+                        "
+                    >
+                        🦖
+                    </div>
+
+
+                    <label class="input-label">
+                        Username
+                    </label>
+
+                    <input
+                        class="input"
+                        id="usernameInput"
+                        maxlength="24"
+                        placeholder="Enter username"
+                    >
+
+
+                    <label class="input-label">
+                        Dino ID
+                    </label>
+
+                    <input
+                        class="input"
+                        id="dinoIdInput"
+                        readonly
+                    >
+
+                    <div class="readonly-note">
+                        🔒 Your Dino ID is permanent and cannot
+                        be changed.
+                    </div>
+
+
+                    <button
+                        class="btn primary"
+                        onclick="saveAccount()"
+                    >
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 SETTINGS
+            ================================================== -->
+
+            <section
+                class="page"
+                id="page-settings"
+            >
+
+                <div class="page-head">
+
+                    <div>
+
+                        <span class="badge">
+                            ⚙️ CUSTOMIZE
+                        </span>
+
+                        <h1>
+                            Settings
+                        </h1>
+
+                        <p>
+                            Choose a light UI with its own
+                            pattern and design.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h2>
+                        🎨 UI Themes
+                    </h2>
+
+                    <p>
+                        10 light color combinations with
+                        different patterns.
+                    </p>
+
+
+                    <div
+                        class="theme-grid"
+                        id="themeGrid"
+                    ></div>
+
+                </div>
+
+
+                <div
+                    class="card"
+                    style="margin-top:15px"
+                >
+
+                    <div class="setting-row">
+
+                        <div>
+
+                            <span class="setting-title">
+                                🔔 Notifications
+                            </span>
+
+                            <span class="setting-description">
+                                Receive notifications
+                            </span>
+
+                        </div>
+
+                        <input
+                            type="checkbox"
+                            checked
+                        >
+
+                    </div>
+
+
+                    <div class="setting-row">
+
+                        <div>
+
+                            <span class="setting-title">
+                                💬 Enter to send
+                            </span>
+
+                            <span class="setting-description">
+                                Press Enter to send messages
+                            </span>
+
+                        </div>
+
+                        <input
+                            type="checkbox"
+                            checked
+                            id="enterToSend"
+                        >
+
+                    </div>
+
+
+                    <div class="setting-row">
+
+                        <div>
+
+                            <span class="setting-title">
+                                🌐 Online status
+                            </span>
+
+                            <span class="setting-description">
+                                Show online status
+                            </span>
+
+                        </div>
+
+                        <input
+                            type="checkbox"
+                            checked
+                        >
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONFIG
+   ========================================================= */
+
+/*
+   IMPORTANT:
+
+   Leave this empty until the backend is deployed.
+
+   Later it becomes something like:
+
+   const API_URL =
+       "https://your-real-dinochat-api.example.com";
+*/
+
+const API_URL = "";
+
+
+/* =========================================================
+   USER STATE
+   ========================================================= */
+
+let state = {
+
+    username:
+        localStorage.getItem("dino_username")
+        || "DinoUser",
+
+    dinoId:
+        localStorage.getItem("dino_id")
+        || generateDinoId(),
+
+    score:
+        Number(
+            localStorage.getItem("dino_score")
+        ) || 100,
+
+    coins:
+        Number(
+            localStorage.getItem("dino_coins")
+        ) || 100,
+
+    theme:
+        localStorage.getItem("dino_theme")
+        || "mint",
+
+    messages:
+        JSON.parse(
+            localStorage.getItem("dino_messages")
+            || "[]"
+        ),
+
+    history:
+        JSON.parse(
+            localStorage.getItem("dino_history")
+            || "[]"
+        )
+};
+
+
+function generateDinoId(){
+
+    return "DINO-" +
+        Math.floor(
+            100000 +
+            Math.random() * 900000
+        );
+
+}
+
+
+/* Save state */
+
+function saveState(){
+
+    localStorage.setItem(
+        "dino_username",
+        state.username
+    );
+
+    localStorage.setItem(
+        "dino_id",
+        state.dinoId
+    );
+
+    localStorage.setItem(
+        "dino_score",
+        state.score
+    );
+
+    localStorage.setItem(
+        "dino_coins",
+        state.coins
+    );
+
+    localStorage.setItem(
+        "dino_theme",
+        state.theme
+    );
+
+    localStorage.setItem(
+        "dino_messages",
+        JSON.stringify(
+            state.messages
+        )
+    );
+
+    localStorage.setItem(
+        "dino_history",
+        JSON.stringify(
+            state.history
+        )
+    );
+
+}
+
+
+/* =========================================================
+   THEMES
+   ========================================================= */
+
+const themes = {
+
+    mint:{
+        name:"Mint Garden",
+        bg:"#effaf3",
+        primary:"#18864b",
+        soft:"#dcf4e5",
+        pattern:
+            "radial-gradient(circle at 20px 20px,#18864b12 2px,transparent 3px)"
+    },
+
+    sky:{
+        name:"Sky Clouds",
+        bg:"#eff9ff",
+        primary:"#2688c9",
+        soft:"#dff2ff",
+        pattern:
+            "radial-gradient(circle at 20px 20px,#2688c912 0 10px,transparent 11px)"
+    },
+
+    blossom:{
+        name:"Cherry Blossom",
+        bg:"#fff5f8",
+        primary:"#d95f87",
+        soft:"#ffe5ee",
+        pattern:
+            "radial-gradient(circle at 20px 20px,#d95f8718 0 5px,transparent 6px)"
+    },
+
+    lavender:{
+        name:"Lavender Dream",
+        bg:"#f7f4ff",
+        primary:"#7659c9",
+        soft:"#ece5ff",
+        pattern:
+            "radial-gradient(circle,#7659c916 1px,transparent 1px)"
+    },
+
+    peach:{
+        name:"Peach Bubble",
+        bg:"#fff6f0",
+        primary:"#dc7650",
+        soft:"#ffe7db",
+        pattern:
+            "radial-gradient(circle at 20px 20px,#dc765012 0 9px,transparent 10px)"
+    },
+
+    lemon:{
+        name:"Lemon Fresh",
+        bg:"#fffdf0",
+        primary:"#7e9c27",
+        soft:"#f7f2bd",
+        pattern:
+            "linear-gradient(45deg,#7e9c2710 25%,transparent 25%,transparent 75%,#7e9c2710 75%)"
+    },
+
+    aqua:{
+        name:"Aqua Wave",
+        bg:"#effcfb",
+        primary:"#159b91",
+        soft:"#d9f5f1",
+        pattern:
+            "repeating-linear-gradient(0deg,transparent 0 10px,#159b910c 11px 12px)"
+    },
+
+    sage:{
+        name:"Sage Paper",
+        bg:"#f5f8f0",
+        primary:"#658653",
+        soft:"#e4eedc",
+        pattern:
+            "linear-gradient(#6586530c 1px,transparent 1px),linear-gradient(90deg,#6586530c 1px,transparent 1px)"
+    },
+
+    periwinkle:{
+        name:"Periwinkle",
+        bg:"#f5f7ff",
+        primary:"#5c75c7",
+        soft:"#e5ebff",
+        pattern:
+            "linear-gradient(45deg,#5c75c70c 25%,transparent 25%,transparent 75%,#5c75c70c 75%)"
+    },
+
+    ice:{
+        name:"Ice Glass",
+        bg:"#f4fbff",
+        primary:"#3b8bbd",
+        soft:"#e3f4ff",
+        pattern:
+            "radial-gradient(circle at 20px 20px,#3b8bbd10 0 14px,transparent 15px)"
+    }
+
+};
+
+
+/* =========================================================
+   APPLY THEME
+   ========================================================= */
+
+function applyTheme(){
+
+    const theme =
+        themes[state.theme]
+        || themes.mint;
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--bg",
+            theme.bg
+        );
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--primary",
+            theme.primary
+        );
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--soft",
+            theme.soft
+        );
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--pattern",
+            theme.pattern
+        );
+
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
+
+function escapeHTML(value){
+
+    return String(value)
+        .replace(
+            /[&<>"']/g,
+            char => {
+
+                const map = {
+
+                    "&":"&amp;",
+                    "<":"&lt;",
+                    ">":"&gt;",
+                    '"':"&quot;",
+                    "'":"&#39;"
+
+                };
+
+                return map[char];
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+const pageNames = {
+
+    home:"Home",
+
+    chat:"Dinosaur",
+
+    manga:"Manga",
+
+    reels:"Reels & Snaps",
+
+    history:"History",
+
+    scores:"Dino Scores",
+
+    account:"Account",
+
+    settings:"Settings"
+
+};
+
+
+function openPage(page){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(
+            element =>
+                element.classList.remove(
+                    "active"
+                )
+        );
+
+
+    const target =
+        document.getElementById(
+            "page-" + page
+        );
+
+    if(target){
+
+        target.classList.add("active");
+
+    }
+
+
+    document
+        .querySelectorAll(".nav")
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "active",
+                    button.dataset.page === page
+                );
+
+            }
+        );
+
+
+    document.getElementById(
+        "pageTitle"
+    ).textContent =
+        pageNames[page];
+
+
+    document.getElementById(
+        "pageSubtitle"
+    ).textContent =
+        page === "chat"
+            ? "Global community chat"
+            : "DinoChat";
+
+
+    document
+        .getElementById("sidebar")
+        .classList.remove("open");
+
+
+    if(page === "chat"){
+        renderMessages();
+    }
+
+    if(page === "history"){
+        renderHistory();
+    }
+
+    if(page === "scores"){
+        renderScores();
+    }
+
+    if(page === "account"){
+        renderAccount();
+    }
+
+    if(page === "settings"){
+        renderThemes();
+    }
+
+}
+
+
+/* Sidebar navigation */
+
+document
+    .querySelectorAll(".nav")
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () =>
+                    openPage(
+                        button.dataset.page
+                    )
+            );
+
+        }
+    );
+
+
+/* Mobile sidebar */
+
+document
+    .getElementById("mobileMenu")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("sidebar")
+                .classList.toggle(
+                    "open"
+                );
+
+        }
+    );
+
+
+/* =========================================================
+   ACCOUNT
+   ========================================================= */
+
+function renderAccount(){
+
+    document
+        .getElementById(
+            "usernameInput"
+        )
+        .value =
+        state.username;
+
+    document
+        .getElementById(
+            "dinoIdInput"
+        )
+        .value =
+        state.dinoId;
+
+}
+
+
+function saveAccount(){
+
+    const input =
+        document
+            .getElementById(
+                "usernameInput"
+            );
+
+    const username =
+        input.value.trim();
+
+
+    if(!username){
+
+        alert(
+            "Please enter a username."
+        );
+
+        return;
+
+    }
+
+
+    state.username =
+        username.substring(
+            0,
+            24
+        );
+
+
+    saveState();
+
+    updateProfile();
+
+    alert(
+        "Username saved!"
+    );
+
+}
+
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+function updateProfile(){
+
+    document
+        .getElementById(
+            "sideName"
+        )
+        .textContent =
+        state.username;
+
+
+    document
+        .getElementById(
+            "sideDinoId"
+        )
+        .textContent =
+        state.dinoId;
+
+
+    document
+        .getElementById(
+            "sideAvatar"
+        )
+        .textContent =
+        state.username
+            .charAt(0)
+            .toUpperCase();
+
+}
+
+
+/* =========================================================
+   CHAT
+   ========================================================= */
+
+function renderMessages(){
+
+    const container =
+        document.getElementById(
+            "messages"
+        );
+
+
+    if(!state.messages.length){
+
+        container.innerHTML = `
+
+            <div class="empty-chat">
+
+                <div class="empty-chat-icon">
+                    🦖
+                </div>
+
+                <h3>
+                    Welcome to Dinosaur
+                </h3>
+
+                <p>
+                    Start the conversation.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        state.messages
+            .map(
+                (message,index) => {
+
+                    const mine =
+                        message.dinoId ===
+                        state.dinoId;
+
+
+                    return `
+
+                        <div
+                            class="
+                                message
+                                ${mine ? "mine" : ""}
+                            "
+                        >
+
+                            <div class="avatar">
+                                🦖
+                            </div>
+
+
+                            <div class="bubble">
+
+                                <div>
+
+                                    <span
+                                        class="message-name"
+                                    >
+                                        ${escapeHTML(
+                                            message.username
+                                        )}
+                                    </span>
+
+                                    <span
+                                        class="message-time"
+                                    >
+                                        ${escapeHTML(
+                                            message.time
+                                        )}
+                                    </span>
+
+                                </div>
+
+
+                                <p
+                                    class="message-text"
+                                >
+                                    ${escapeHTML(
+                                        message.text
+                                    )}
+                                </p>
+
+
+                                ${
+                                    mine
+                                    ?
+                                    `
+
+                                    <div
+                                        class="
+                                            message-controls
+                                        "
+                                    >
+
+                                        <button
+                                            onclick="
+                                                editMessage(
+                                                    ${index}
+                                                )
+                                            "
+                                        >
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            onclick="
+                                                deleteMessage(
+                                                    ${index}
+                                                )
+                                            "
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </div>
+
+                                    `
+                                    :
+                                    ""
+                                }
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    container.scrollTop =
+        container.scrollHeight;
+
+}
+
+
+/* Send message */
+
+function sendMessage(){
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+
+    const text =
+        input.value.trim();
+
+
+    if(!text){
+        return;
+    }
+
+
+    const message = {
+
+        dinoId:
+            state.dinoId,
+
+        username:
+            state.username,
+
+        text:
+            text,
+
+        time:
+            new Date()
+                .toLocaleTimeString(
+                    [],
+                    {
+                        hour:"2-digit",
+                        minute:"2-digit"
+                    }
+                )
+
+    };
+
+
+    state.messages.push(
+        message
+    );
+
+
+    state.messages =
+        state.messages.slice(
+            -100
+        );
+
+
+    state.score += 1;
+
+    state.coins += 1;
+
+
+    state.history.unshift({
+
+        text:
+            "Sent a message in Dinosaur",
+
+        time:
+            new Date()
+                .toLocaleString()
+
+    });
+
+
+    state.history =
+        state.history.slice(
+            0,
+            100
+        );
+
+
+    saveState();
+
+    input.value = "";
+
+    renderMessages();
+
+    renderScores();
+
+    renderHistory();
+
+
+    /*
+       If a real backend is connected,
+       this sends the message there.
+    */
+
+    sendToBackend(
+        message
+    );
+
+}
+
+
+/* Edit message */
+
+function editMessage(index){
+
+    const message =
+        state.messages[index];
+
+
+    const updated =
+        prompt(
+            "Edit message:",
+            message.text
+        );
+
+
+    if(
+        updated === null
+        ||
+        !updated.trim()
+    ){
+
+        return;
+
+    }
+
+
+    message.text =
+        updated.trim();
+
+
+    saveState();
+
+    renderMessages();
+
+}
+
+
+/* Delete message */
+
+function deleteMessage(index){
+
+    if(
+        !confirm(
+            "Delete this message?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    state.messages.splice(
+        index,
+        1
+    );
+
+
+    saveState();
+
+    renderMessages();
+
+}
+
+
+/* =========================================================
+   BACKEND CONNECTION
+   ========================================================= */
+
+async function sendToBackend(
+    message
+){
+
+    if(!API_URL){
+
+        return;
+
+    }
+
+
+    try{
+
+        await fetch(
+            API_URL +
+            "/api/messages",
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify(
+                        message
+                    )
+
+            }
+        );
+
+    }
+    catch(error){
+
+        console.log(
+            "Backend connection unavailable.",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   HISTORY
+   ========================================================= */
+
+function renderHistory(){
+
+    const container =
+        document.getElementById(
+            "historyList"
+        );
+
+
+    if(!state.history.length){
+
+        container.innerHTML = `
+
+            <div class="card">
+
+                No activity yet.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        state.history
+            .slice(0,30)
+            .map(
+                item => `
+
+                    <div class="card row">
+
+                        <span>
+                            🦖
+                            <b>
+                                ${escapeHTML(
+                                    item.text
+                                )}
+                            </b>
+                        </span>
+
+                        <small>
+                            ${escapeHTML(
+                                item.time
+                            )}
+                        </small>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   SCORES
+   ========================================================= */
+
+function renderScores(){
+
+    document
+        .getElementById(
+            "scoreNumber"
+        )
+        .textContent =
+        state.score;
+
+
+    document
+        .getElementById(
+            "scoreRowNumber"
+        )
+        .textContent =
+        state.score;
+
+
+    document
+        .getElementById(
+            "coinNumber"
+        )
+        .textContent =
+        state.coins;
+
+
+    document
+        .getElementById(
+            "scoreName"
+        )
+        .textContent =
+        state.username;
+
+}
+
+
+/* =========================================================
+   THEMES
+   ========================================================= */
+
+function renderThemes(){
+
+    const container =
+        document.getElementById(
+            "themeGrid"
+        );
+
+
+    container.innerHTML =
+        Object
+            .entries(themes)
+            .map(
+                ([key,theme]) => `
+
+                    <button
+                        class="
+                            theme-button
+                            ${
+                                key === state.theme
+                                ? "selected"
+                                : ""
+                            }
+                        "
+                        onclick="
+                            setTheme(
+                                '${key}'
+                            )
+                        "
+                    >
+
+                        <div
+                            class="theme-preview"
+                            style="
+                                background-color:
+                                    ${theme.bg};
+
+                                background-image:
+                                    ${theme.pattern};
+                            "
+                        ></div>
+
+
+                        <strong>
+                            ${theme.name}
+                        </strong>
+
+                        <small>
+                            Light pattern
+                        </small>
+
+                    </button>
+
+                `
+            )
+            .join("");
+
+}
+
+
+function setTheme(
+    themeName
+){
+
+    if(
+        !themes[themeName]
+    ){
+
+        return;
+
+    }
+
+
+    state.theme =
+        themeName;
+
+
+    applyTheme();
+
+    saveState();
+
+    renderThemes();
+
+}
+
+
+/* =========================================================
+   CHAT KEYBOARD
+   ========================================================= */
+
+document
+    .getElementById(
+        "sendButton"
+    )
+    .addEventListener(
+        "click",
+        sendMessage
+    );
+
+
+document
+    .getElementById(
+        "messageInput"
+    )
+    .addEventListener(
+        "keydown",
+        event => {
+
+            const enterEnabled =
+                document
+                    .getElementById(
+                        "enterToSend"
+                    )
+                    .checked;
+
+
+            if(
+                event.key === "Enter"
+                &&
+                !event.shiftKey
+                &&
+                enterEnabled
+            ){
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+applyTheme();
+
+updateProfile();
+
+renderAccount();
+
+renderScores();
+
+renderHistory();
+
+renderThemes();
+
+openPage("home");
+
+
+/* =========================================================
+   INTRO ANIMATION
+   ========================================================= */
+
+setTimeout(
+    () => {
+
+        const intro =
+            document.getElementById(
+                "intro"
+            );
+
+
+        intro.style.opacity = "0";
+
+
+        setTimeout(
+            () => {
+
+                intro.remove();
+
+                document
+                    .getElementById(
+                        "app"
+                    )
+                    .style.display =
+                    "block";
+
+            },
+            600
+        );
+
+    },
+    1200
+);
+
+</script>
+
+</body>
+</html>
