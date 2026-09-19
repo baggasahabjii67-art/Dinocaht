@@ -1117,6 +1117,132 @@ main{
             );
     }
 }
+
+/* =========================================================
+   AUTHENTICATION
+   ========================================================= */
+#authScreen{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:9000;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:var(--bg);
+}
+.auth-card{
+    width:min(460px,100%);
+    padding:28px;
+    border:1px solid var(--border);
+    border-radius:24px;
+    background:rgba(255,255,255,.94);
+    box-shadow:var(--shadow);
+}
+.auth-brand{
+    text-align:center;
+    margin-bottom:22px;
+}
+.auth-dino{
+    font-size:58px;
+    margin-bottom:6px;
+}
+.auth-brand h1{
+    margin:0;
+    color:var(--primary);
+    font-size:30px;
+}
+.auth-brand p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:13px;
+}
+.auth-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    padding:5px;
+    margin-bottom:18px;
+    background:var(--soft);
+    border-radius:13px;
+}
+.auth-tab{
+    border:0;
+    padding:10px;
+    border-radius:10px;
+    background:transparent;
+    color:var(--muted);
+    font-weight:800;
+}
+.auth-tab.active{
+    background:var(--card);
+    color:var(--primary-dark);
+    box-shadow:0 3px 10px rgba(0,0,0,.05);
+}
+.auth-form{
+    display:none;
+}
+.auth-form.active{
+    display:block;
+}
+.auth-form h2{
+    margin:0 0 6px;
+}
+.auth-help{
+    margin:0 0 16px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.5;
+}
+.auth-error{
+    display:none;
+    margin:10px 0;
+    padding:10px 12px;
+    border:1px solid #f0c7c5;
+    border-radius:11px;
+    background:#fff2f1;
+    color:#b33c38;
+    font-size:12px;
+}
+.auth-success{
+    display:none;
+    margin:10px 0;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:11px;
+    background:var(--soft);
+    color:var(--primary-dark);
+    font-size:12px;
+}
+.auth-submit{
+    width:100%;
+    margin-top:16px;
+}
+.server-status{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    margin-top:15px;
+    color:var(--muted);
+    font-size:11px;
+}
+.server-status-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#d9a12b;
+}
+.server-status-dot.online{
+    background:#36b66b;
+}
+.server-status-dot.offline{
+    background:#d9534f;
+}
+@media(max-width:500px){
+    .auth-card{padding:22px;}
+}
+
 </style>
 </head>
 
@@ -1150,6 +1276,63 @@ main{
 <!-- =======================================================
      APPLICATION
 ======================================================= -->
+
+
+<!-- =======================================================
+     AUTHENTICATION
+======================================================= -->
+<div id="authScreen">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <div class="auth-dino">🦖</div>
+            <h1>DinoChat</h1>
+            <p>Join the global Dinosaur community.</p>
+        </div>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="registerTab" type="button">Create account</button>
+            <button class="auth-tab" id="loginTab" type="button">Sign in</button>
+        </div>
+
+        <div id="authError" class="auth-error"></div>
+        <div id="authSuccess" class="auth-success"></div>
+
+        <form id="registerForm" class="auth-form active">
+            <h2>Create your Dino identity</h2>
+            <p class="auth-help">
+                Choose a username. DinoChat will generate your permanent Dino ID.
+            </p>
+
+            <label class="input-label" for="registerUsername">Username</label>
+            <input class="input" id="registerUsername" maxlength="24"
+                   autocomplete="nickname" placeholder="e.g. DinoRex" required>
+
+            <button class="btn primary auth-submit" id="registerButton" type="submit">
+                Create Dino ID
+            </button>
+        </form>
+
+        <form id="loginForm" class="auth-form">
+            <h2>Welcome back</h2>
+            <p class="auth-help">
+                Sign in with your permanent Dino ID. Your Dino ID cannot be changed.
+            </p>
+
+            <label class="input-label" for="loginDinoId">Dino ID</label>
+            <input class="input" id="loginDinoId" maxlength="20"
+                   autocomplete="username" placeholder="DINO-123456" required>
+
+            <button class="btn primary auth-submit" id="loginButton" type="submit">
+                Enter DinoChat
+            </button>
+        </form>
+
+        <div class="server-status">
+            <span class="server-status-dot" id="serverStatusDot"></span>
+            <span id="serverStatusText">Connecting to DinoChat server…</span>
+        </div>
+    </div>
+</div>
 
 <div id="app">
 
@@ -2136,6 +2319,15 @@ main{
                         Save Changes
                     </button>
 
+                    <button
+                        class="btn"
+                        style="margin-top:10px"
+                        onclick="logout()"
+                    >
+                        Log out
+                    </button>
+
+
                 </div>
 
             </section>
@@ -2274,1278 +2466,871 @@ main{
 </div>
 
 
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 <script>
-
 /* =========================================================
-   CONFIG
+   DINOCCHAT — GLOBAL APP SCRIPT
    ========================================================= */
-
-/*
-   IMPORTANT:
-
-   Leave this empty until the backend is deployed.
-
-   Later it becomes something like:
-
-   const API_URL =
-       "https://your-real-dinochat-api.example.com";
-*/
 
 const API_URL = "https://dinocaht.onrender.com";
+const TOKEN_KEY = "dinochat_token";
 
-
-/* =========================================================
-   USER STATE
-   ========================================================= */
+let dinoSocket = null;
+let booting = true;
 
 let state = {
-
-    username:
-        localStorage.getItem("dino_username")
-        || "DinoUser",
-
-    dinoId:
-        localStorage.getItem("dino_id")
-        || generateDinoId(),
-
-    score:
-        Number(
-            localStorage.getItem("dino_score")
-        ) || 100,
-
-    coins:
-        Number(
-            localStorage.getItem("dino_coins")
-        ) || 100,
-
-    theme:
-        localStorage.getItem("dino_theme")
-        || "mint",
-
-    messages:
-        JSON.parse(
-            localStorage.getItem("dino_messages")
-            || "[]"
-        ),
-
-    history:
-        JSON.parse(
-            localStorage.getItem("dino_history")
-            || "[]"
-        )
+    token: localStorage.getItem(TOKEN_KEY) || "",
+    username: localStorage.getItem("dino_username") || "",
+    dinoId: localStorage.getItem("dino_id") || "",
+    score: Number(localStorage.getItem("dino_score")) || 100,
+    coins: Number(localStorage.getItem("dino_coins")) || 100,
+    theme: localStorage.getItem("dino_theme") || "mint",
+    messages: [],
+    history: JSON.parse(localStorage.getItem("dino_history") || "[]")
 };
 
-
-function generateDinoId(){
-
-    return "DINO-" +
-        Math.floor(
-            100000 +
-            Math.random() * 900000
-        );
-
-}
-
-
-/* Save state */
+/* =========================================================
+   HELPERS
+   ========================================================= */
 
 function saveState(){
-
-    localStorage.setItem(
-        "dino_username",
-        state.username
-    );
-
-    localStorage.setItem(
-        "dino_id",
-        state.dinoId
-    );
-
-    localStorage.setItem(
-        "dino_score",
-        state.score
-    );
-
-    localStorage.setItem(
-        "dino_coins",
-        state.coins
-    );
-
-    localStorage.setItem(
-        "dino_theme",
-        state.theme
-    );
-
-    localStorage.setItem(
-        "dino_messages",
-        JSON.stringify(
-            state.messages
-        )
-    );
-
-    localStorage.setItem(
-        "dino_history",
-        JSON.stringify(
-            state.history
-        )
-    );
-
+    localStorage.setItem("dino_username", state.username);
+    localStorage.setItem("dino_id", state.dinoId);
+    localStorage.setItem("dino_score", String(state.score));
+    localStorage.setItem("dino_coins", String(state.coins));
+    localStorage.setItem("dino_theme", state.theme);
+    localStorage.setItem("dino_history", JSON.stringify(state.history));
 }
 
+function clearSession(){
+    state.token = "";
+    state.username = "";
+    state.dinoId = "";
+    state.messages = [];
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem("dino_username");
+    localStorage.removeItem("dino_id");
+    localStorage.removeItem("dino_score");
+    localStorage.removeItem("dino_coins");
+    if(dinoSocket){
+        dinoSocket.disconnect();
+        dinoSocket = null;
+    }
+}
+
+function escapeHTML(value){
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+    }[char]));
+}
+
+function setAuthMessage(message="", type="error"){
+    const error = document.getElementById("authError");
+    const success = document.getElementById("authSuccess");
+    error.style.display = "none";
+    success.style.display = "none";
+
+    if(!message) return;
+
+    const target = type === "success" ? success : error;
+    target.textContent = message;
+    target.style.display = "block";
+}
+
+function setServerStatus(text, status=""){
+    const dot = document.getElementById("serverStatusDot");
+    const label = document.getElementById("serverStatusText");
+    if(label) label.textContent = text;
+    if(dot) dot.className = "server-status-dot " + status;
+}
+
+function setButtonLoading(button, loading, normalText){
+    if(!button) return;
+    button.disabled = loading;
+    button.textContent = loading ? "Please wait…" : normalText;
+}
+
+async function apiFetch(path, options={}){
+    const headers = {
+        ...(options.headers || {})
+    };
+
+    if(options.body && !headers["Content-Type"]){
+        headers["Content-Type"] = "application/json";
+    }
+
+    if(state.token){
+        headers.Authorization = "Bearer " + state.token;
+    }
+
+    const response = await fetch(API_URL + path, {
+        ...options,
+        headers
+    });
+
+    let data = null;
+    try{
+        data = await response.json();
+    }catch(_){}
+
+    if(!response.ok){
+        const error = new Error(
+            data?.error ||
+            data?.message ||
+            `Server returned ${response.status}`
+        );
+        error.status = response.status;
+        throw error;
+    }
+
+    return data;
+}
+
+function normalizeMessage(message){
+    if(!message) return null;
+
+    const created =
+        message.createdAt ||
+        message.timestamp ||
+        message.time ||
+        new Date().toISOString();
+
+    const date = new Date(created);
+    const time = Number.isNaN(date.getTime())
+        ? String(message.time || "")
+        : date.toLocaleTimeString([], {
+            hour:"2-digit",
+            minute:"2-digit"
+        });
+
+    return {
+        ...message,
+        id: message.id || message._id || "",
+        dinoId: message.dinoId || message.user?.dinoId || "",
+        username: message.username || message.user?.username || "DinoUser",
+        text: String(message.text || ""),
+        time,
+        createdAt: message.createdAt || message.timestamp || created
+    };
+}
+
+function upsertMessage(message){
+    const normalized = normalizeMessage(message);
+    if(!normalized || !normalized.text) return;
+
+    const index = state.messages.findIndex(
+        item => normalized.id && item.id === normalized.id
+    );
+
+    if(index >= 0){
+        state.messages[index] = normalized;
+    }else{
+        state.messages.push(normalized);
+    }
+
+    state.messages = state.messages.slice(-200);
+    renderMessages();
+}
+
+function removeMessage(messageId){
+    if(!messageId) return;
+    state.messages = state.messages.filter(
+        message => message.id !== messageId
+    );
+    renderMessages();
+}
 
 /* =========================================================
    THEMES
    ========================================================= */
 
 const themes = {
-
     mint:{
         name:"Mint Garden",
         bg:"#effaf3",
         primary:"#18864b",
         soft:"#dcf4e5",
-        pattern:
-            "radial-gradient(circle at 20px 20px,#18864b12 2px,transparent 3px)"
+        pattern:"radial-gradient(circle at 20px 20px,#18864b12 2px,transparent 3px)"
     },
-
     sky:{
         name:"Sky Clouds",
         bg:"#eff9ff",
         primary:"#2688c9",
         soft:"#dff2ff",
-        pattern:
-            "radial-gradient(circle at 20px 20px,#2688c912 0 10px,transparent 11px)"
+        pattern:"radial-gradient(circle at 20px 20px,#2688c912 0 10px,transparent 11px)"
     },
-
     blossom:{
         name:"Cherry Blossom",
         bg:"#fff5f8",
         primary:"#d95f87",
         soft:"#ffe5ee",
-        pattern:
-            "radial-gradient(circle at 20px 20px,#d95f8718 0 5px,transparent 6px)"
+        pattern:"radial-gradient(circle at 20px 20px,#d95f8718 0 5px,transparent 6px)"
     },
-
     lavender:{
         name:"Lavender Dream",
         bg:"#f7f4ff",
         primary:"#7659c9",
         soft:"#ece5ff",
-        pattern:
-            "radial-gradient(circle,#7659c916 1px,transparent 1px)"
+        pattern:"radial-gradient(circle,#7659c916 1px,transparent 1px)"
     },
-
     peach:{
         name:"Peach Bubble",
         bg:"#fff6f0",
         primary:"#dc7650",
         soft:"#ffe7db",
-        pattern:
-            "radial-gradient(circle at 20px 20px,#dc765012 0 9px,transparent 10px)"
+        pattern:"radial-gradient(circle at 20px 20px,#dc765012 0 9px,transparent 10px)"
     },
-
     lemon:{
         name:"Lemon Fresh",
         bg:"#fffdf0",
         primary:"#7e9c27",
         soft:"#f7f2bd",
-        pattern:
-            "linear-gradient(45deg,#7e9c2710 25%,transparent 25%,transparent 75%,#7e9c2710 75%)"
+        pattern:"linear-gradient(45deg,#7e9c2710 25%,transparent 25%,transparent 75%,#7e9c2710 75%)"
     },
-
     aqua:{
         name:"Aqua Wave",
         bg:"#effcfb",
         primary:"#159b91",
         soft:"#d9f5f1",
-        pattern:
-            "repeating-linear-gradient(0deg,transparent 0 10px,#159b910c 11px 12px)"
+        pattern:"repeating-linear-gradient(0deg,transparent 0 10px,#159b910c 11px 12px)"
     },
-
     sage:{
         name:"Sage Paper",
         bg:"#f5f8f0",
         primary:"#658653",
         soft:"#e4eedc",
-        pattern:
-            "linear-gradient(#6586530c 1px,transparent 1px),linear-gradient(90deg,#6586530c 1px,transparent 1px)"
+        pattern:"linear-gradient(#6586530c 1px,transparent 1px),linear-gradient(90deg,#6586530c 1px,transparent 1px)"
     },
-
     periwinkle:{
         name:"Periwinkle",
         bg:"#f5f7ff",
         primary:"#5c75c7",
         soft:"#e5ebff",
-        pattern:
-            "linear-gradient(45deg,#5c75c70c 25%,transparent 25%,transparent 75%,#5c75c70c 75%)"
+        pattern:"linear-gradient(45deg,#5c75c70c 25%,transparent 25%,transparent 75%,#5c75c70c 75%)"
     },
-
     ice:{
         name:"Ice Glass",
         bg:"#f4fbff",
         primary:"#3b8bbd",
         soft:"#e3f4ff",
-        pattern:
-            "radial-gradient(circle at 20px 20px,#3b8bbd10 0 14px,transparent 15px)"
+        pattern:"radial-gradient(circle at 20px 20px,#3b8bbd10 0 14px,transparent 15px)"
     }
-
 };
 
-
-/* =========================================================
-   APPLY THEME
-   ========================================================= */
-
 function applyTheme(){
-
-    const theme =
-        themes[state.theme]
-        || themes.mint;
-
-    document.documentElement
-        .style
-        .setProperty(
-            "--bg",
-            theme.bg
-        );
-
-    document.documentElement
-        .style
-        .setProperty(
-            "--primary",
-            theme.primary
-        );
-
-    document.documentElement
-        .style
-        .setProperty(
-            "--soft",
-            theme.soft
-        );
-
-    document.documentElement
-        .style
-        .setProperty(
-            "--pattern",
-            theme.pattern
-        );
-
+    const theme = themes[state.theme] || themes.mint;
+    document.documentElement.style.setProperty("--bg", theme.bg);
+    document.documentElement.style.setProperty("--primary", theme.primary);
+    document.documentElement.style.setProperty("--soft", theme.soft);
+    document.documentElement.style.setProperty("--pattern", theme.pattern);
 }
 
-
-/* =========================================================
-   HTML ESCAPE
-   ========================================================= */
-
-function escapeHTML(value){
-
-    return String(value)
-        .replace(
-            /[&<>"']/g,
-            char => {
-
-                const map = {
-
-                    "&":"&amp;",
-                    "<":"&lt;",
-                    ">":"&gt;",
-                    '"':"&quot;",
-                    "'":"&#39;"
-
-                };
-
-                return map[char];
-
-            }
-        );
-
+function setTheme(themeName){
+    if(!themes[themeName]) return;
+    state.theme = themeName;
+    applyTheme();
+    saveState();
+    renderThemes();
 }
-
 
 /* =========================================================
    NAVIGATION
    ========================================================= */
 
 const pageNames = {
-
     home:"Home",
-
     chat:"Dinosaur",
-
     manga:"Manga",
-
     reels:"Reels & Snaps",
-
     history:"History",
-
     scores:"Dino Scores",
-
     account:"Account",
-
     settings:"Settings"
-
 };
 
-
 function openPage(page){
+    document.querySelectorAll(".page").forEach(
+        element => element.classList.remove("active")
+    );
 
-    document
-        .querySelectorAll(".page")
-        .forEach(
-            element =>
-                element.classList.remove(
-                    "active"
-                )
+    const target = document.getElementById("page-" + page);
+    if(target) target.classList.add("active");
+
+    document.querySelectorAll(".nav").forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.page === page
         );
+    });
 
+    document.getElementById("pageTitle").textContent =
+        pageNames[page] || "DinoChat";
 
-    const target =
-        document.getElementById(
-            "page-" + page
-        );
-
-    if(target){
-
-        target.classList.add("active");
-
-    }
-
-
-    document
-        .querySelectorAll(".nav")
-        .forEach(
-            button => {
-
-                button.classList.toggle(
-                    "active",
-                    button.dataset.page === page
-                );
-
-            }
-        );
-
-
-    document.getElementById(
-        "pageTitle"
-    ).textContent =
-        pageNames[page];
-
-
-    document.getElementById(
-        "pageSubtitle"
-    ).textContent =
+    document.getElementById("pageSubtitle").textContent =
         page === "chat"
             ? "Global community chat"
             : "DinoChat";
 
+    document.getElementById("sidebar").classList.remove("open");
 
-    document
-        .getElementById("sidebar")
-        .classList.remove("open");
-
-
-    if(page === "chat"){
-        renderMessages();
-    }
-
-    if(page === "history"){
-        renderHistory();
-    }
-
-    if(page === "scores"){
-        renderScores();
-    }
-
-    if(page === "account"){
-        renderAccount();
-    }
-
-    if(page === "settings"){
-        renderThemes();
-    }
-
+    if(page === "chat") renderMessages();
+    if(page === "history") renderHistory();
+    if(page === "scores") renderScores();
+    if(page === "account") renderAccount();
+    if(page === "settings") renderThemes();
 }
 
+document.querySelectorAll(".nav").forEach(button => {
+    button.addEventListener("click", () => openPage(button.dataset.page));
+});
 
-/* Sidebar navigation */
+document.getElementById("mobileMenu").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("open");
+});
 
-document
-    .querySelectorAll(".nav")
-    .forEach(
-        button => {
+/* =========================================================
+   AUTH UI
+   ========================================================= */
 
-            button.addEventListener(
-                "click",
-                () =>
-                    openPage(
-                        button.dataset.page
-                    )
-            );
+function showAuth(){
+    document.getElementById("app").style.display = "none";
+    document.getElementById("authScreen").style.display = "flex";
+}
 
+function showApp(){
+    document.getElementById("authScreen").style.display = "none";
+    document.getElementById("app").style.display = "block";
+}
+
+function switchAuth(mode){
+    const register = mode === "register";
+    document.getElementById("registerTab").classList.toggle("active", register);
+    document.getElementById("loginTab").classList.toggle("active", !register);
+    document.getElementById("registerForm").classList.toggle("active", register);
+    document.getElementById("loginForm").classList.toggle("active", !register);
+    setAuthMessage("");
+}
+
+document.getElementById("registerTab").addEventListener("click", () => switchAuth("register"));
+document.getElementById("loginTab").addEventListener("click", () => switchAuth("login"));
+
+document.getElementById("registerForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const input = document.getElementById("registerUsername");
+    const button = document.getElementById("registerButton");
+    const username = input.value.trim();
+
+    if(username.length < 2){
+        setAuthMessage("Username must contain at least 2 characters.");
+        return;
+    }
+
+    setAuthMessage("");
+    setButtonLoading(button, true, "Create Dino ID");
+
+    try{
+        const data = await apiFetch("/api/auth/register", {
+            method:"POST",
+            body:JSON.stringify({username})
+        });
+
+        state.token = data.token || "";
+        state.username = data.user?.username || data.username || username;
+        state.dinoId = data.user?.dinoId || data.dinoId || "";
+        state.score = Number(data.user?.score ?? data.score ?? 100);
+        state.coins = Number(data.user?.coins ?? data.coins ?? 100);
+
+        if(!state.token || !state.dinoId){
+            throw new Error("Server returned an incomplete account.");
         }
-    );
 
+        localStorage.setItem(TOKEN_KEY, state.token);
+        saveState();
+        input.value = "";
+        setAuthMessage("Account created. Your permanent Dino ID is " + state.dinoId, "success");
 
-/* Mobile sidebar */
+        await enterApp();
+    }catch(error){
+        setAuthMessage(error.message || "Registration failed.");
+    }finally{
+        setButtonLoading(button, false, "Create Dino ID");
+    }
+});
 
-document
-    .getElementById("mobileMenu")
-    .addEventListener(
-        "click",
-        () => {
+document.getElementById("loginForm").addEventListener("submit", async event => {
+    event.preventDefault();
 
-            document
-                .getElementById("sidebar")
-                .classList.toggle(
-                    "open"
-                );
+    const input = document.getElementById("loginDinoId");
+    const button = document.getElementById("loginButton");
+    const dinoId = input.value.trim().toUpperCase();
 
+    if(!/^DINO-[A-Z0-9]+$/i.test(dinoId)){
+        setAuthMessage("Enter a valid Dino ID, for example DINO-123456.");
+        return;
+    }
+
+    setAuthMessage("");
+    setButtonLoading(button, true, "Enter DinoChat");
+
+    try{
+        const data = await apiFetch("/api/auth/login", {
+            method:"POST",
+            body:JSON.stringify({dinoId})
+        });
+
+        state.token = data.token || "";
+        state.username = data.user?.username || data.username || "";
+        state.dinoId = data.user?.dinoId || data.dinoId || dinoId;
+        state.score = Number(data.user?.score ?? data.score ?? 100);
+        state.coins = Number(data.user?.coins ?? data.coins ?? 100);
+
+        if(!state.token || !state.dinoId){
+            throw new Error("Server returned an incomplete login.");
         }
-    );
 
+        localStorage.setItem(TOKEN_KEY, state.token);
+        saveState();
+        input.value = "";
+
+        await enterApp();
+    }catch(error){
+        setAuthMessage(error.message || "Login failed.");
+    }finally{
+        setButtonLoading(button, false, "Enter DinoChat");
+    }
+});
 
 /* =========================================================
    ACCOUNT
    ========================================================= */
 
 function renderAccount(){
-
-    document
-        .getElementById(
-            "usernameInput"
-        )
-        .value =
-        state.username;
-
-    document
-        .getElementById(
-            "dinoIdInput"
-        )
-        .value =
-        state.dinoId;
-
+    document.getElementById("usernameInput").value = state.username;
+    document.getElementById("dinoIdInput").value = state.dinoId;
 }
 
-
-function saveAccount(){
-
-    const input =
-        document
-            .getElementById(
-                "usernameInput"
-            );
-
-    const username =
-        input.value.trim();
-
+async function saveAccount(){
+    const input = document.getElementById("usernameInput");
+    const username = input.value.trim();
 
     if(!username){
-
-        alert(
-            "Please enter a username."
-        );
-
+        alert("Please enter a username.");
         return;
-
     }
 
+    try{
+        const data = await apiFetch("/api/account/username", {
+            method:"PUT",
+            body:JSON.stringify({username:username.substring(0,24)})
+        });
 
-    state.username =
-        username.substring(
-            0,
-            24
-        );
+        state.username =
+            data.user?.username ||
+            data.username ||
+            username.substring(0,24);
 
-
-    saveState();
-
-    updateProfile();
-
-    alert(
-        "Username saved!"
-    );
-
+        saveState();
+        updateProfile();
+        renderMessages();
+        alert("Username saved globally.");
+    }catch(error){
+        alert(error.message || "Could not save username.");
+    }
 }
-
-
-/* =========================================================
-   PROFILE
-   ========================================================= */
 
 function updateProfile(){
+    document.getElementById("sideName").textContent =
+        state.username || "DinoUser";
 
-    document
-        .getElementById(
-            "sideName"
-        )
-        .textContent =
-        state.username;
+    document.getElementById("sideDinoId").textContent =
+        state.dinoId || "DINO-000000";
 
-
-    document
-        .getElementById(
-            "sideDinoId"
-        )
-        .textContent =
-        state.dinoId;
-
-
-    document
-        .getElementById(
-            "sideAvatar"
-        )
-        .textContent =
-        state.username
-            .charAt(0)
-            .toUpperCase();
-
+    document.getElementById("sideAvatar").textContent =
+        (state.username || "D").charAt(0).toUpperCase();
 }
 
+function logout(){
+    if(!confirm("Log out of this DinoChat account?")) return;
+
+    clearSession();
+    showAuth();
+    switchAuth("login");
+    setAuthMessage("You have been logged out.", "success");
+}
 
 /* =========================================================
    CHAT
    ========================================================= */
 
 function renderMessages(){
-
-    const container =
-        document.getElementById(
-            "messages"
-        );
-
+    const container = document.getElementById("messages");
 
     if(!state.messages.length){
-
         container.innerHTML = `
-
             <div class="empty-chat">
-
-                <div class="empty-chat-icon">
-                    🦖
-                </div>
-
-                <h3>
-                    Welcome to Dinosaur
-                </h3>
-
-                <p>
-                    Start the conversation.
-                </p>
-
+                <div class="empty-chat-icon">🦖</div>
+                <h3>Welcome to Dinosaur</h3>
+                <p>Start the global conversation.</p>
             </div>
-
         `;
-
         return;
-
     }
 
+    container.innerHTML = state.messages.map((message,index) => {
+        const mine = message.dinoId === state.dinoId;
 
-    container.innerHTML =
-        state.messages
-            .map(
-                (message,index) => {
+        return `
+            <div class="message ${mine ? "mine" : ""}">
+                <div class="avatar">🦖</div>
+                <div class="bubble">
+                    <div>
+                        <span class="message-name">
+                            ${escapeHTML(message.username)}
+                        </span>
+                        <span class="message-time">
+                            ${escapeHTML(message.time)}
+                        </span>
+                    </div>
 
-                    const mine =
-                        message.dinoId ===
-                        state.dinoId;
+                    <p class="message-text">
+                        ${escapeHTML(message.text)}
+                    </p>
 
-
-                    return `
-
-                        <div
-                            class="
-                                message
-                                ${mine ? "mine" : ""}
-                            "
-                        >
-
-                            <div class="avatar">
-                                🦖
-                            </div>
-
-
-                            <div class="bubble">
-
-                                <div>
-
-                                    <span
-                                        class="message-name"
-                                    >
-                                        ${escapeHTML(
-                                            message.username
-                                        )}
-                                    </span>
-
-                                    <span
-                                        class="message-time"
-                                    >
-                                        ${escapeHTML(
-                                            message.time
-                                        )}
-                                    </span>
-
-                                </div>
-
-
-                                <p
-                                    class="message-text"
-                                >
-                                    ${escapeHTML(
-                                        message.text
-                                    )}
-                                </p>
-
-
-                                ${
-                                    mine
-                                    ?
-                                    `
-
-                                    <div
-                                        class="
-                                            message-controls
-                                        "
-                                    >
-
-                                        <button
-                                            onclick="
-                                                editMessage(
-                                                    ${index}
-                                                )
-                                            "
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            onclick="
-                                                deleteMessage(
-                                                    ${index}
-                                                )
-                                            "
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </div>
-
-                                    `
-                                    :
-                                    ""
-                                }
-
-                            </div>
-
+                    ${mine && message.id ? `
+                        <div class="message-controls">
+                            <button onclick="deleteMessage(${index})">
+                                Delete
+                            </button>
                         </div>
+                    ` : ""}
+                </div>
+            </div>
+        `;
+    }).join("");
 
-                    `;
-
-                }
-            )
-            .join("");
-
-
-    container.scrollTop =
-        container.scrollHeight;
-
+    container.scrollTop = container.scrollHeight;
 }
 
+async function sendMessage(){
+    const input = document.getElementById("messageInput");
+    const text = input.value.trim();
 
-/* Send message */
-
-function sendMessage(){
-
-    const input =
-        document.getElementById(
-            "messageInput"
-        );
-
-
-    const text =
-        input.value.trim();
-
-
-    if(!text){
-        return;
-    }
-
-
-    const message = {
-
-        dinoId:
-            state.dinoId,
-
-        username:
-            state.username,
-
-        text:
-            text,
-
-        time:
-            new Date()
-                .toLocaleTimeString(
-                    [],
-                    {
-                        hour:"2-digit",
-                        minute:"2-digit"
-                    }
-                )
-
-    };
-
-
-    state.messages.push(
-        message
-    );
-
-
-    state.messages =
-        state.messages.slice(
-            -100
-        );
-
-
-    state.score += 1;
-
-    state.coins += 1;
-
-
-    state.history.unshift({
-
-        text:
-            "Sent a message in Dinosaur",
-
-        time:
-            new Date()
-                .toLocaleString()
-
-    });
-
-
-    state.history =
-        state.history.slice(
-            0,
-            100
-        );
-
-
-    saveState();
+    if(!text || !state.token) return;
 
     input.value = "";
 
-    renderMessages();
+    try{
+        if(dinoSocket?.connected){
+            dinoSocket.emit("send-message", {text});
+        }else{
+            const data = await apiFetch("/api/messages", {
+                method:"POST",
+                body:JSON.stringify({text})
+            });
 
-    renderScores();
+            const message = data.message || data;
+            upsertMessage(message);
+        }
 
-    renderHistory();
-
-
-    /*
-       If a real backend is connected,
-       this sends the message there.
-    */
-
-    sendToBackend(
-        message
-    );
-
+        state.score += 1;
+        state.coins += 1;
+        state.history.unshift({
+            text:"Sent a message in Dinosaur",
+            time:new Date().toLocaleString()
+        });
+        state.history = state.history.slice(0,100);
+        saveState();
+        renderScores();
+        renderHistory();
+    }catch(error){
+        input.value = text;
+        alert(error.message || "Message could not be sent.");
+    }
 }
 
+async function deleteMessage(index){
+    const message = state.messages[index];
 
-/* Edit message */
-
-function editMessage(index){
-
-    const message =
-        state.messages[index];
-
-
-    const updated =
-        prompt(
-            "Edit message:",
-            message.text
-        );
-
-
-    if(
-        updated === null
-        ||
-        !updated.trim()
-    ){
-
-        return;
-
-    }
-
-
-    message.text =
-        updated.trim();
-
-
-    saveState();
-
-    renderMessages();
-
-}
-
-
-/* Delete message */
-
-function deleteMessage(index){
-
-    if(
-        !confirm(
-            "Delete this message?"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    state.messages.splice(
-        index,
-        1
-    );
-
-
-    saveState();
-
-    renderMessages();
-
-}
-
-
-/* =========================================================
-   BACKEND CONNECTION
-   ========================================================= */
-
-async function sendToBackend(
-    message
-){
-
-    if(!API_URL){
-
-        return;
-
-    }
-
+    if(!message || !message.id) return;
+    if(!confirm("Delete this message?")) return;
 
     try{
-
-        await fetch(
-            API_URL +
-            "/api/messages",
-            {
-
-                method:"POST",
-
-                headers:{
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body:
-                    JSON.stringify(
-                        message
-                    )
-
-            }
-        );
-
-    }
-    catch(error){
-
-        console.log(
-            "Backend connection unavailable.",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   HISTORY
-   ========================================================= */
-
-function renderHistory(){
-
-    const container =
-        document.getElementById(
-            "historyList"
-        );
-
-
-    if(!state.history.length){
-
-        container.innerHTML = `
-
-            <div class="card">
-
-                No activity yet.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        state.history
-            .slice(0,30)
-            .map(
-                item => `
-
-                    <div class="card row">
-
-                        <span>
-                            🦖
-                            <b>
-                                ${escapeHTML(
-                                    item.text
-                                )}
-                            </b>
-                        </span>
-
-                        <small>
-                            ${escapeHTML(
-                                item.time
-                            )}
-                        </small>
-
-                    </div>
-
-                `
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   SCORES
-   ========================================================= */
-
-function renderScores(){
-
-    document
-        .getElementById(
-            "scoreNumber"
-        )
-        .textContent =
-        state.score;
-
-
-    document
-        .getElementById(
-            "scoreRowNumber"
-        )
-        .textContent =
-        state.score;
-
-
-    document
-        .getElementById(
-            "coinNumber"
-        )
-        .textContent =
-        state.coins;
-
-
-    document
-        .getElementById(
-            "scoreName"
-        )
-        .textContent =
-        state.username;
-
-}
-
-
-/* =========================================================
-   THEMES
-   ========================================================= */
-
-function renderThemes(){
-
-    const container =
-        document.getElementById(
-            "themeGrid"
-        );
-
-
-    container.innerHTML =
-        Object
-            .entries(themes)
-            .map(
-                ([key,theme]) => `
-
-                    <button
-                        class="
-                            theme-button
-                            ${
-                                key === state.theme
-                                ? "selected"
-                                : ""
-                            }
-                        "
-                        onclick="
-                            setTheme(
-                                '${key}'
-                            )
-                        "
-                    >
-
-                        <div
-                            class="theme-preview"
-                            style="
-                                background-color:
-                                    ${theme.bg};
-
-                                background-image:
-                                    ${theme.pattern};
-                            "
-                        ></div>
-
-
-                        <strong>
-                            ${theme.name}
-                        </strong>
-
-                        <small>
-                            Light pattern
-                        </small>
-
-                    </button>
-
-                `
-            )
-            .join("");
-
-}
-
-
-function setTheme(
-    themeName
-){
-
-    if(
-        !themes[themeName]
-    ){
-
-        return;
-
-    }
-
-
-    state.theme =
-        themeName;
-
-
-    applyTheme();
-
-    saveState();
-
-    renderThemes();
-
-}
-
-
-/* =========================================================
-   CHAT KEYBOARD
-   ========================================================= */
-
-document
-    .getElementById(
-        "sendButton"
-    )
-    .addEventListener(
-        "click",
-        sendMessage
-    );
-
-
-document
-    .getElementById(
-        "messageInput"
-    )
-    .addEventListener(
-        "keydown",
-        event => {
-
-            const enterEnabled =
-                document
-                    .getElementById(
-                        "enterToSend"
-                    )
-                    .checked;
-
-
-            if(
-                event.key === "Enter"
-                &&
-                !event.shiftKey
-                &&
-                enterEnabled
-            ){
-
-                event.preventDefault();
-
-                sendMessage();
-
-            }
-
+        if(dinoSocket?.connected){
+            dinoSocket.emit("delete-message", {
+                messageId:message.id
+            });
+        }else{
+            await apiFetch("/api/messages/" + encodeURIComponent(message.id), {
+                method:"DELETE"
+            });
+            removeMessage(message.id);
         }
-    );
-
-
-/* =========================================================
-   STARTUP
-   ========================================================= */
-
-applyTheme();
-
-updateProfile();
-
-renderAccount();
-
-renderScores();
-
-renderHistory();
-
-renderThemes();
-
-openPage("home");
-
+    }catch(error){
+        alert(error.message || "Message could not be deleted.");
+    }
+}
 
 /* =========================================================
-   INTRO ANIMATION
+   GLOBAL SOCKET
    ========================================================= */
 
-setTimeout(
-    () => {
+function connectDinoServer(){
+    if(!state.token) return;
 
-        const intro =
-            document.getElementById(
-                "intro"
-            );
-
-
-        intro.style.opacity = "0";
-
-
-        setTimeout(
-            () => {
-
-                intro.remove();
-
-                document
-                    .getElementById(
-                        "app"
-                    )
-                    .style.display =
-                    "block";
-
-            },
-            600
-        );
-
-    },
-    1200
-);
-
-</script>
-<!-- DinoChat Global Server -->
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-
-<script>
-const DINO_API = "https://dinocaht.onrender.com";
-
-let dinoSocket = null;
-
-function connectDinoServer() {
-    const token = localStorage.getItem("dinochat_token");
-
-    if (!token) {
-        console.log("DinoChat: not logged in");
-        return;
+    if(dinoSocket){
+        dinoSocket.disconnect();
     }
 
-    dinoSocket = io(DINO_API, {
-        transports: ["websocket", "polling"]
+    dinoSocket = io(API_URL, {
+        transports:["websocket","polling"],
+        auth:{token:state.token}
     });
 
     dinoSocket.on("connect", () => {
-        console.log("🦖 Connected to DinoChat global server");
+        setServerStatus("DinoChat server connected", "online");
 
         dinoSocket.emit("join-dinosaur", {
-            token: token
+            token:state.token
         });
     });
 
-    dinoSocket.on("new-message", (message) => {
-        console.log("🦖 New global message:", message);
+    dinoSocket.on("new-message", message => {
+        upsertMessage(message);
+    });
 
-        // Send event to the existing DinoChat UI
-        window.dispatchEvent(
-            new CustomEvent("dino-global-message", {
-                detail: message
-            })
+    dinoSocket.on("message-deleted", messageId => {
+        removeMessage(
+            typeof messageId === "object"
+                ? messageId.messageId
+                : messageId
         );
     });
 
-    dinoSocket.on("message-deleted", (messageId) => {
-        window.dispatchEvent(
-            new CustomEvent("dino-message-deleted", {
-                detail: messageId
-            })
-        );
+    dinoSocket.on("connect_error", error => {
+        console.error("DinoChat connection error:", error);
+        setServerStatus("Server connection problem", "offline");
     });
 
     dinoSocket.on("disconnect", () => {
-        console.log("DinoChat server disconnected");
-    });
-
-    dinoSocket.on("connect_error", (error) => {
-        console.error("DinoChat server connection error:", error);
+        setServerStatus("Reconnecting to DinoChat…", "");
     });
 }
 
-function dinoServerSendMessage(text) {
-    if (!dinoSocket || !dinoSocket.connected) {
-        console.error("DinoChat server is not connected.");
-        return false;
+/* =========================================================
+   SERVER DATA
+   ========================================================= */
+
+async function loadAccount(){
+    const data = await apiFetch("/api/account");
+
+    const user = data.user || data;
+
+    state.username = user.username || state.username;
+    state.dinoId = user.dinoId || state.dinoId;
+    state.score = Number(user.score ?? state.score);
+    state.coins = Number(user.coins ?? state.coins);
+
+    saveState();
+}
+
+async function loadMessages(){
+    const data = await apiFetch("/api/messages");
+    const list = Array.isArray(data)
+        ? data
+        : (data.messages || []);
+
+    state.messages = list
+        .map(normalizeMessage)
+        .filter(Boolean)
+        .slice(-200);
+
+    renderMessages();
+}
+
+async function loadScores(){
+    try{
+        const data = await apiFetch("/api/scores");
+        const list = Array.isArray(data)
+            ? data
+            : (data.scores || data.users || []);
+
+        if(Array.isArray(list)){
+            const current = list.find(
+                user => user.dinoId === state.dinoId
+            );
+
+            if(current){
+                state.score = Number(current.score ?? state.score);
+                state.coins = Number(current.coins ?? state.coins);
+                saveState();
+            }
+        }
+    }catch(error){
+        console.warn("Could not load scores:", error);
+    }
+}
+
+/* =========================================================
+   HISTORY / SCORES / THEMES
+   ========================================================= */
+
+function renderHistory(){
+    const container = document.getElementById("historyList");
+
+    if(!state.history.length){
+        container.innerHTML = `
+            <div class="card">No activity yet.</div>
+        `;
+        return;
     }
 
-    dinoSocket.emit("send-message", {
-        text: text
-    });
-
-    return true;
+    container.innerHTML = state.history
+        .slice(0,30)
+        .map(item => `
+            <div class="card row">
+                <span>
+                    🦖 <b>${escapeHTML(item.text)}</b>
+                </span>
+                <small>${escapeHTML(item.time)}</small>
+            </div>
+        `)
+        .join("");
 }
 
-function dinoServerDeleteMessage(messageId) {
-    if (!dinoSocket || !dinoSocket.connected) {
-        return false;
+function renderScores(){
+    document.getElementById("scoreNumber").textContent = state.score;
+    document.getElementById("scoreRowNumber").textContent = state.score;
+    document.getElementById("coinNumber").textContent = state.coins;
+    document.getElementById("scoreName").textContent = state.username || "DinoUser";
+}
+
+function renderThemes(){
+    const container = document.getElementById("themeGrid");
+
+    container.innerHTML = Object.entries(themes)
+        .map(([key,theme]) => `
+            <button
+                class="theme-button ${key === state.theme ? "selected" : ""}"
+                onclick="setTheme('${key}')"
+            >
+                <div
+                    class="theme-preview"
+                    style="
+                        background-color:${theme.bg};
+                        background-image:${theme.pattern};
+                    "
+                ></div>
+                <strong>${escapeHTML(theme.name)}</strong>
+                <small>Light pattern</small>
+            </button>
+        `)
+        .join("");
+}
+
+/* =========================================================
+   SESSION BOOT
+   ========================================================= */
+
+async function enterApp(){
+    showApp();
+    updateProfile();
+    renderAccount();
+    renderScores();
+    renderHistory();
+    renderThemes();
+    openPage("home");
+
+    try{
+        await loadAccount();
+        await loadMessages();
+        await loadScores();
+        updateProfile();
+        renderAccount();
+        renderScores();
+        connectDinoServer();
+        setServerStatus("DinoChat server connected", "online");
+    }catch(error){
+        console.error(error);
+
+        if(error.status === 401){
+            clearSession();
+            showAuth();
+            switchAuth("login");
+            setAuthMessage("Your session expired. Please sign in again.");
+            return;
+        }
+
+        setServerStatus("Server temporarily unavailable", "offline");
+    }
+}
+
+async function restoreSession(){
+    setServerStatus("Checking DinoChat server…", "");
+
+    try{
+        const health = await fetch(API_URL + "/api/health");
+        if(!health.ok) throw new Error("Health check failed");
+        setServerStatus("DinoChat server online", "online");
+    }catch(error){
+        console.warn("Server health check failed:", error);
+        setServerStatus("Server unavailable", "offline");
     }
 
-    dinoSocket.emit("delete-message", {
-        messageId: messageId
-    });
-
-    return true;
+    if(state.token){
+        await enterApp();
+    }else{
+        showAuth();
+        switchAuth("register");
+    }
 }
 
-window.addEventListener("load", () => {
-    connectDinoServer();
-});
+/* =========================================================
+   KEYBOARD / STARTUP
+   ========================================================= */
+
+document.getElementById("sendButton").addEventListener(
+    "click",
+    sendMessage
+);
+
+document.getElementById("messageInput").addEventListener(
+    "keydown",
+    event => {
+        const enterEnabled =
+            document.getElementById("enterToSend").checked;
+
+        if(
+            event.key === "Enter" &&
+            !event.shiftKey &&
+            enterEnabled
+        ){
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+);
+
+applyTheme();
+renderThemes();
+renderHistory();
+renderScores();
+
+setTimeout(() => {
+    const intro = document.getElementById("intro");
+    if(intro){
+        intro.style.opacity = "0";
+        setTimeout(() => {
+            intro.remove();
+            restoreSession();
+        }, 600);
+    }
+}, 1200);
 </script>
+
 </body>
 </html>
