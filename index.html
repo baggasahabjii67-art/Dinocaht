@@ -3462,6 +3462,90 @@ setTimeout(
 );
 
 </script>
+<!-- DinoChat Global Server -->
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 
+<script>
+const DINO_API = "https://dinocaht.onrender.com";
+
+let dinoSocket = null;
+
+function connectDinoServer() {
+    const token = localStorage.getItem("dinochat_token");
+
+    if (!token) {
+        console.log("DinoChat: not logged in");
+        return;
+    }
+
+    dinoSocket = io(DINO_API, {
+        transports: ["websocket", "polling"]
+    });
+
+    dinoSocket.on("connect", () => {
+        console.log("🦖 Connected to DinoChat global server");
+
+        dinoSocket.emit("join-dinosaur", {
+            token: token
+        });
+    });
+
+    dinoSocket.on("new-message", (message) => {
+        console.log("🦖 New global message:", message);
+
+        // Send event to the existing DinoChat UI
+        window.dispatchEvent(
+            new CustomEvent("dino-global-message", {
+                detail: message
+            })
+        );
+    });
+
+    dinoSocket.on("message-deleted", (messageId) => {
+        window.dispatchEvent(
+            new CustomEvent("dino-message-deleted", {
+                detail: messageId
+            })
+        );
+    });
+
+    dinoSocket.on("disconnect", () => {
+        console.log("DinoChat server disconnected");
+    });
+
+    dinoSocket.on("connect_error", (error) => {
+        console.error("DinoChat server connection error:", error);
+    });
+}
+
+function dinoServerSendMessage(text) {
+    if (!dinoSocket || !dinoSocket.connected) {
+        console.error("DinoChat server is not connected.");
+        return false;
+    }
+
+    dinoSocket.emit("send-message", {
+        text: text
+    });
+
+    return true;
+}
+
+function dinoServerDeleteMessage(messageId) {
+    if (!dinoSocket || !dinoSocket.connected) {
+        return false;
+    }
+
+    dinoSocket.emit("delete-message", {
+        messageId: messageId
+    });
+
+    return true;
+}
+
+window.addEventListener("load", () => {
+    connectDinoServer();
+});
+</script>
 </body>
 </html>
