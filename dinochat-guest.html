@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>DinoChat — Guest Mode</title>
+
+<style>
+:root{
+    --bg:#effaf3;
+    --card:#fff;
+    --card2:#f7fdf9;
+    --text:#173526;
+    --muted:#688073;
+    --primary:#18864b;
+    --primary-dark:#0f6d3b;
+    --soft:#dcf4e5;
+    --border:#cde6d6;
+    --danger:#d9534f;
+    --shadow:0 12px 35px rgba(35,100,65,.10);
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:var(--text);
+    background:var(--bg);
+}
+
+button,input,textarea{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+/* AUTH */
+
+#auth{
+    min-height:100vh;
+    display:grid;
+    place-items:center;
+    padding:20px;
+}
+
+.auth-card{
+    width:min(460px,100%);
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:25px;
+    padding:30px;
+    box-shadow:var(--shadow);
+}
+
+.logo{
+    text-align:center;
+    font-size:60px;
+}
+
+.auth-card h1{
+    text-align:center;
+    margin:5px 0;
+    font-size:34px;
+}
+
+.auth-sub{
+    text-align:center;
+    color:var(--muted);
+    margin-bottom:25px;
+}
+
+.auth-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.auth-tab{
+    padding:11px;
+    border:1px solid var(--border);
+    border-radius:11px;
+    background:var(--card2);
+    color:var(--text);
+}
+
+.auth-tab.active{
+    background:var(--soft);
+    border-color:var(--primary);
+    font-weight:800;
+}
+
+.auth-form{
+    display:none;
+}
+
+.auth-form.active{
+    display:block;
+}
+
+.input{
+    width:100%;
+    padding:13px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:var(--card2);
+    color:var(--text);
+    outline:none;
+    margin-bottom:12px;
+}
+
+.input:focus{
+    border-color:var(--primary);
+}
+
+.primary{
+    width:100%;
+    padding:13px;
+    border:0;
+    border-radius:12px;
+    background:var(--primary);
+    color:white;
+    font-weight:800;
+}
+
+.divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--muted);
+    font-size:11px;
+    margin:20px 0 12px;
+}
+
+.divider:before,
+.divider:after{
+    content:"";
+    height:1px;
+    flex:1;
+    background:var(--border);
+}
+
+.guest-btn{
+    width:100%;
+    padding:13px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:var(--card);
+    color:var(--text);
+    font-weight:800;
+}
+
+.guest-btn:hover{
+    background:var(--soft);
+    border-color:var(--primary);
+}
+
+.guest-info{
+    text-align:center;
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.5;
+}
+
+.error{
+    color:var(--danger);
+    font-size:12px;
+    margin-top:10px;
+}
+
+/* APP */
+
+#app{
+    display:none;
+    min-height:100vh;
+}
+
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    width:250px;
+    padding:20px;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(15px);
+    border-right:1px solid var(--border);
+    z-index:10;
+}
+
+.brand{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.brand-icon{
+    width:45px;
+    height:45px;
+    display:grid;
+    place-items:center;
+    border-radius:14px;
+    background:var(--soft);
+    font-size:25px;
+}
+
+.brand-name{
+    font-weight:900;
+}
+
+.brand-sub{
+    color:var(--muted);
+    font-size:10px;
+}
+
+.nav{
+    width:100%;
+    border:0;
+    background:transparent;
+    color:var(--muted);
+    text-align:left;
+    padding:12px;
+    margin:3px 0;
+    border-radius:12px;
+}
+
+.nav:hover,
+.nav.active{
+    background:var(--soft);
+    color:var(--primary-dark);
+}
+
+.profile{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+    right:20px;
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:15px;
+    background:var(--card2);
+}
+
+.avatar{
+    float:left;
+    width:38px;
+    height:38px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:var(--soft);
+    color:var(--primary);
+    font-weight:900;
+    margin-right:9px;
+}
+
+.profile strong,
+.profile small{
+    display:block;
+}
+
+.profile small{
+    color:var(--muted);
+    font-size:10px;
+}
+
+main{
+    margin-left:250px;
+    min-height:100vh;
+}
+
+.topbar{
+    position:sticky;
+    top:0;
+    z-index:5;
+    height:75px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 28px;
+    background:rgba(239,250,243,.9);
+    backdrop-filter:blur(15px);
+    border-bottom:1px solid var(--border);
+}
+
+.top-title{
+    margin:0;
+}
+
+.top-sub{
+    margin:3px 0 0;
+    color:var(--muted);
+    font-size:12px;
+}
+
+.status{
+    font-size:12px;
+    color:var(--muted);
+}
+
+#content{
+    padding:28px;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+/* HOME */
+
+.hero{
+    padding:40px;
+    min-height:350px;
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    align-items:center;
+    gap:20px;
+    border:1px solid var(--border);
+    border-radius:25px;
+    background:linear-gradient(135deg,#dff5e7,#effaf3,#eaf5ff);
+    box-shadow:var(--shadow);
+}
+
+.badge{
+    display:inline-block;
+    padding:7px 11px;
+    border-radius:99px;
+    background:var(--soft);
+    color:var(--primary-dark);
+    font-size:10px;
+    font-weight:800;
+}
+
+.hero h1{
+    font-size:clamp(40px,6vw,70px);
+    line-height:.95;
+    margin:18px 0;
+}
+
+.hero h1 span{
+    color:var(--primary);
+}
+
+.hero p{
+    color:var(--muted);
+    line-height:1.7;
+}
+
+.hero-dino{
+    display:grid;
+    place-items:center;
+}
+
+.dino{
+    width:190px;
+    height:190px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:white;
+    box-shadow:var(--shadow);
+    font-size:90px;
+}
+
+/* CARDS */
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+}
+
+.card{
+    padding:20px;
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:var(--card);
+    box-shadow:0 5px 20px rgba(40,100,65,.05);
+}
+
+.card h3{
+    margin:8px 0;
+}
+
+.card p{
+    color:var(--muted);
+    line-height:1.5;
+}
+
+/* CHAT */
+
+.chat{
+    height:650px;
+    display:flex;
+    flex-direction:column;
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:var(--card);
+    overflow:hidden;
+}
+
+.chat-head{
+    padding:16px;
+    border-bottom:1px solid var(--border);
+}
+
+.messages{
+    flex:1;
+    overflow:auto;
+    padding:18px;
+    background:var(--bg);
+}
+
+.message{
+    margin-bottom:12px;
+}
+
+.message b{
+    font-size:12px;
+}
+
+.message p{
+    display:inline-block;
+    margin:4px 0;
+    padding:9px 12px;
+    border:1px solid var(--border);
+    border-radius:13px;
+    background:var(--card);
+}
+
+.composer{
+    display:flex;
+    gap:8px;
+    padding:12px;
+    border-top:1px solid var(--border);
+}
+
+.composer textarea{
+    flex:1;
+    resize:none;
+    padding:11px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:var(--card2);
+}
+
+.send{
+    width:48px;
+    border:0;
+    border-radius:12px;
+    background:var(--primary);
+    color:white;
+}
+
+/* SCORE */
+
+.score-big{
+    font-size:50px;
+    font-weight:900;
+}
+
+.locked{
+    cursor:pointer;
+}
+
+.locked:hover{
+    border-color:var(--primary);
+    background:var(--soft);
+}
+
+/* MODAL */
+
+#modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    place-items:center;
+    background:rgba(0,0,0,.45);
+    padding:20px;
+}
+
+.modal-box{
+    width:min(400px,100%);
+    background:var(--card);
+    border-radius:20px;
+    padding:25px;
+    text-align:center;
+}
+
+.modal-icon{
+    font-size:50px;
+}
+
+.modal-box h2{
+    margin:8px 0;
+}
+
+.modal-box p{
+    color:var(--muted);
+    line-height:1.5;
+}
+
+.close{
+    width:100%;
+    border:0;
+    border-radius:11px;
+    padding:12px;
+    background:var(--primary);
+    color:white;
+    font-weight:800;
+}
+
+/* MOBILE */
+
+@media(max-width:800px){
+
+    .sidebar{
+        width:220px;
+        transform:translateX(-100%);
+        transition:.25s;
+    }
+
+    .sidebar.open{
+        transform:translateX(0);
+    }
+
+    main{
+        margin-left:0;
+    }
+
+    .hero{
+        grid-template-columns:1fr;
+        padding:25px;
+    }
+
+    .grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:500px){
+
+    #content{
+        padding:15px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .topbar{
+        padding:0 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- AUTH -->
+
+<section id="auth">
+
+<div class="auth-card">
+
+    <div class="logo">🦖</div>
+
+    <h1>DinoChat</h1>
+
+    <p class="auth-sub">
+        Connect. Chat. Share. Be a Dino.
+    </p>
+
+    <div class="auth-tabs">
+
+        <button
+            id="registerTab"
+            class="auth-tab active"
+            onclick="switchAuth('register')">
+            Create Dino
+        </button>
+
+        <button
+            id="loginTab"
+            class="auth-tab"
+            onclick="switchAuth('login')">
+            Sign In
+        </button>
+
+    </div>
+
+    <form id="registerForm" class="auth-form active">
+
+        <input
+            id="registerUsername"
+            class="input"
+            placeholder="Choose username"
+            maxlength="24"
+        >
+
+        <button class="primary">
+            Create Permanent Dino ID
+        </button>
+
+    </form>
+
+    <form id="loginForm" class="auth-form">
+
+        <input
+            id="loginDinoId"
+            class="input"
+            placeholder="DINO-123456"
+        >
+
+        <button class="primary">
+            Sign In
+        </button>
+
+    </form>
+
+    <div class="divider">
+        <span>OR</span>
+    </div>
+
+    <button
+        class="guest-btn"
+        onclick="enterGuest()">
+        👤 Continue as Guest
+    </button>
+
+    <p class="guest-info">
+        Guest User can explore DinoChat without a Dino ID.
+        Dino Score features require an account.
+    </p>
+
+    <div id="authError" class="error"></div>
+
+</div>
+
+</section>
+
+
+<!-- APP -->
+
+<section id="app">
+
+<aside class="sidebar" id="sidebar">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            🦖
+        </div>
+
+        <div>
+            <div class="brand-name">
+                DinoChat
+            </div>
+
+            <div class="brand-sub">
+                Social Dinosaur Network
+            </div>
+        </div>
+
+    </div>
+
+    <button class="nav active"
+        onclick="openPage('home')">
+        🏠 Home
+    </button>
+
+    <button class="nav"
+        onclick="openPage('chat')">
+        💬 Dinosaur Chat
+    </button>
+
+    <button class="nav"
+        onclick="openPage('manga')">
+        📚 Manga
+    </button>
+
+    <button class="nav"
+        onclick="openPage('reels')">
+        🎬 Reels & Snaps
+    </button>
+
+    <button class="nav"
+        onclick="openPage('history')">
+        🕘 History
+    </button>
+
+    <!-- SCORE UI IS STILL VISIBLE -->
+    <button class="nav"
+        onclick="openScoreFeature()">
+        🏆 Dino Scores
+    </button>
+
+    <button class="nav"
+        onclick="openScoreFeature()">
+        ♟️ Bet
+    </button>
+
+    <button class="nav"
+        onclick="openPage('account')">
+        👤 Account
+    </button>
+
+    <div class="profile">
+
+        <div class="avatar" id="avatar">
+            G
+        </div>
+
+        <strong id="profileName">
+            Guest User
+        </strong>
+
+        <small id="profileDino">
+            Guest Mode
+        </small>
+
+    </div>
+
+</aside>
+
+
+<main>
+
+<header class="topbar">
+
+    <div>
+        <h2
+            class="top-title"
+            id="pageTitle">
+            Home
+        </h2>
+
+        <p
+            class="top-sub"
+            id="pageSubtitle">
+            Welcome to DinoChat
+        </p>
+    </div>
+
+    <div class="status">
+        🟢 Guest Mode
+    </div>
+
+</header>
+
+
+<div id="content">
+
+
+<!-- HOME -->
+
+<section
+    id="page-home"
+    class="page active">
+
+    <div class="hero">
+
+        <div>
+
+            <span class="badge">
+                GUEST MODE
+            </span>
+
+            <h1>
+                Welcome to
+                <span>DinoChat</span>
+            </h1>
+
+            <p>
+                Chat with the Dinosaur community,
+                explore manga, reels, snaps and more.
+                You are currently browsing as Guest User.
+            </p>
+
+        </div>
+
+        <div class="hero-dino">
+
+            <div class="dino">
+                🦖
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="grid" style="margin-top:20px">
+
+        <div class="card">
+            <h3>💬 Chat</h3>
+            <p>
+                Join the Dinosaur community.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>📚 Manga</h3>
+            <p>
+                Explore your manga section.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>🎬 Reels</h3>
+            <p>
+                Explore Reels and Snaps.
+            </p>
+        </div>
+
+        <div
+            class="card locked"
+            onclick="openScoreFeature()">
+
+            <h3>🏆 Dino Score</h3>
+
+            <p>
+                Score, rankings, achievements
+                and DinoCoins.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- CHAT -->
+
+<section
+    id="page-chat"
+    class="page">
+
+    <h1>Dinosaur Chat</h1>
+
+    <p style="color:var(--muted)">
+        Global community chat
+    </p>
+
+    <div class="chat">
+
+        <div class="chat-head">
+
+            <strong>
+                🦖 Dinosaur
+            </strong>
+
+            <small>
+                Global Chat
+            </small>
+
+        </div>
+
+        <div
+            id="messages"
+            class="messages">
+
+            <div class="message">
+
+                <b>DinoChat</b>
+
+                <p>
+                    Welcome, Guest User!
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="composer">
+
+            <textarea
+                id="messageInput"
+                placeholder="Write a message..."
+                rows="1"></textarea>
+
+            <button
+                class="send"
+                onclick="sendMessage()">
+                ➤
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- MANGA -->
+
+<section
+    id="page-manga"
+    class="page">
+
+    <h1>Manga</h1>
+
+    <p style="color:var(--muted)">
+        Discover manga inside DinoChat.
+    </p>
+
+    <div class="grid">
+
+        <div class="card">
+            <div style="font-size:50px">
+                📖
+            </div>
+            <h3>Manga Library</h3>
+            <p>
+                Your manga area.
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size:50px">
+                🔥
+            </div>
+            <h3>Trending</h3>
+            <p>
+                Popular manga.
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size:50px">
+                ⭐
+            </div>
+            <h3>Favorites</h3>
+            <p>
+                Save your favorites.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- REELS -->
+
+<section
+    id="page-reels"
+    class="page">
+
+    <h1>Reels & Snaps</h1>
+
+    <p style="color:var(--muted)">
+        Share and explore social content.
+    </p>
+
+    <div class="grid">
+
+        <div class="card">
+            <div style="font-size:50px">
+                🎬
+            </div>
+            <h3>Reels</h3>
+            <p>
+                Instagram Reels section.
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size:50px">
+                📸
+            </div>
+            <h3>Snaps</h3>
+            <p>
+                Snapchat content section.
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size:50px">
+                ▶️
+            </div>
+            <h3>Shorts</h3>
+            <p>
+                Short-form videos.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- HISTORY -->
+
+<section
+    id="page-history"
+    class="page">
+
+    <h1>History</h1>
+
+    <div class="card">
+
+        <h3>
+            🕘 Your History
+        </h3>
+
+        <p>
+            Guest activity will appear here.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- SCORES -->
+
+<section
+    id="page-scores"
+    class="page">
+
+    <h1>Dino Scores</h1>
+
+    <p style="color:var(--muted)">
+        Dino Score system
+    </p>
+
+    <div class="grid">
+
+        <div class="card">
+
+            <h3>
+                Current Score
+            </h3>
+
+            <div class="score-big">
+                —
+            </div>
+
+            <p>
+                Guest users don't receive
+                Dino Score.
+            </p>
+
+        </div>
+
+        <div
+            class="card locked"
+            onclick="openScoreFeature()">
+
+            <h3>
+                🏆 Rankings
+            </h3>
+
+            <p>
+                Global Dino rankings
+            </p>
+
+        </div>
+
+        <div
+            class="card locked"
+            onclick="openScoreFeature()">
+
+            <h3>
+                🎖️ Achievements
+            </h3>
+
+            <p>
+                Unlock Dino achievements
+            </p>
+
+        </div>
+
+        <div
+            class="card locked"
+            onclick="openScoreFeature()">
+
+            <h3>
+                🪙 DinoCoins
+            </h3>
+
+            <p>
+                Dino Score economy
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ACCOUNT -->
+
+<section
+    id="page-account"
+    class="page">
+
+    <h1>Account</h1>
+
+    <div class="card">
+
+        <h3>
+            👤 Guest User
+        </h3>
+
+        <p>
+            You are currently using DinoChat
+            without a permanent Dino ID.
+        </p>
+
+        <p>
+            To unlock Dino Score, rankings,
+            achievements, DinoCoins and Bet,
+            create or sign in to a DinoChat account.
+        </p>
+
+        <button
+            class="primary"
+            onclick="goToAuth()">
+            Get Dino ID
+        </button>
+
+    </div>
+
+</section>
+
+
+</div>
+
+</main>
+
+</section>
+
+
+<!-- SCORE LOCK MODAL -->
+
+<div id="modal">
+
+    <div class="modal-box">
+
+        <div class="modal-icon">
+            🔒
+        </div>
+
+        <h2>
+            Dino ID Required
+        </h2>
+
+        <p>
+            You need a permanent Dino ID
+            to use Dino Score features.
+        </p>
+
+        <button
+            class="close"
+            onclick="closeModal()">
+            Got it
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const API_URL =
+    "https://dinocaht.onrender.com";
+
+let isGuest = true;
+
+let messages = [];
+
+
+/* AUTH */
+
+function switchAuth(mode){
+
+    document
+        .getElementById("registerTab")
+        .classList.toggle(
+            "active",
+            mode === "register"
+        );
+
+    document
+        .getElementById("loginTab")
+        .classList.toggle(
+            "active",
+            mode === "login"
+        );
+
+    document
+        .getElementById("registerForm")
+        .classList.toggle(
+            "active",
+            mode === "register"
+        );
+
+    document
+        .getElementById("loginForm")
+        .classList.toggle(
+            "active",
+            mode === "login"
+        );
+}
+
+
+function enterGuest(){
+
+    isGuest = true;
+
+    localStorage.setItem(
+        "dinochat_guest",
+        "true"
+    );
+
+    document
+        .getElementById("auth")
+        .style.display = "none";
+
+    document
+        .getElementById("app")
+        .style.display = "block";
+
+    updateGuestProfile();
+
+    openPage("home");
+}
+
+
+function goToAuth(){
+
+    document
+        .getElementById("app")
+        .style.display = "none";
+
+    document
+        .getElementById("auth")
+        .style.display = "grid";
+
+    switchAuth("register");
+}
+
+
+/* PROFILE */
+
+function updateGuestProfile(){
+
+    document
+        .getElementById("profileName")
+        .textContent =
+        "Guest User";
+
+    document
+        .getElementById("profileDino")
+        .textContent =
+        "Guest Mode";
+
+    document
+        .getElementById("avatar")
+        .textContent =
+        "G";
+}
+
+
+/* PAGES */
+
+const pageNames = {
+
+    home:"Home",
+
+    chat:"Dinosaur Chat",
+
+    manga:"Manga",
+
+    reels:"Reels & Snaps",
+
+    history:"History",
+
+    scores:"Dino Scores",
+
+    account:"Account"
+
+};
+
+
+function openPage(page){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(
+            p => p.classList.remove("active")
+        );
+
+    const target =
+        document.getElementById(
+            "page-" + page
+        );
+
+    if(target){
+        target.classList.add("active");
+    }
+
+    document
+        .querySelectorAll(".nav")
+        .forEach(button => {
+
+            button.classList.remove("active");
+
+        });
+
+    document
+        .getElementById("pageTitle")
+        .textContent =
+        pageNames[page] || "DinoChat";
+
+    document
+        .getElementById("pageSubtitle")
+        .textContent =
+        page === "chat"
+            ? "Global community chat"
+            : "DinoChat";
+}
+
+
+/* SCORE PROTECTION */
+
+function openScoreFeature(){
+
+    if(isGuest){
+
+        document
+            .getElementById("modal")
+            .style.display = "grid";
+
+        return;
+    }
+
+    openPage("scores");
+}
+
+
+function closeModal(){
+
+    document
+        .getElementById("modal")
+        .style.display = "none";
+}
+
+
+/* CHAT */
+
+function sendMessage(){
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+    const text =
+        input.value.trim();
+
+    if(!text){
+        return;
+    }
+
+    const message = {
+
+        name:"Guest User",
+
+        text:text,
+
+        time:new Date()
+            .toLocaleTimeString(
+                [],
+                {
+                    hour:"2-digit",
+                    minute:"2-digit"
+                }
+            )
+
+    };
+
+    messages.push(message);
+
+    renderMessages();
+
+    input.value = "";
+
+    /*
+       Guest messages are intentionally
+       local in this standalone file.
+
+       Your authenticated DinoChat
+       frontend continues using the
+       Render backend.
+    */
+}
+
+
+function renderMessages(){
+
+    const box =
+        document.getElementById(
+            "messages"
+        );
+
+    box.innerHTML = "";
+
+    messages.forEach(
+        message => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "message";
+
+            item.innerHTML = `
+
+                <b>
+                    ${escapeHTML(message.name)}
+                </b>
+
+                <p>
+                    ${escapeHTML(message.text)}
+                </p>
+
+                <small style="
+                    color:var(--muted);
+                    margin-left:6px;
+                ">
+                    ${escapeHTML(message.time)}
+                </small>
+
+            `;
+
+            box.appendChild(item);
+
+        }
+    );
+
+    box.scrollTop =
+        box.scrollHeight;
+}
+
+
+function escapeHTML(value){
+
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+/* ENTER TO SEND */
+
+document
+    .getElementById("messageInput")
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if(
+                event.key === "Enter" &&
+                !event.shiftKey
+            ){
+
+                event.preventDefault();
+
+                sendMessage();
+            }
+
+        }
+    );
+
+
+/* START */
+
+if(
+    localStorage.getItem(
+        "dinochat_guest"
+    ) === "true"
+){
+
+    enterGuest();
+
+}
+
+</script>
+
+</body>
+</html>
