@@ -1,25 +1,62 @@
-# DinoEngine v0.2
+# DinoEngine v0.3 — Windows EXE
 
-V2 adds runtime detection and a broader AI-oriented local development API.
+DinoEngine can now be packaged as a standalone Windows executable.
 
-Capabilities:
-- Recursive project tree/file inventory
-- Read, create, overwrite and delete files
-- Recursive folder creation
-- Run commands with workspace and timeout
-- Detect common language runtimes: Node, npm, Python, Java, C/C++, Go, Rust, .NET, PHP, Ruby and PowerShell
-- Inspect project metadata
-- Git status, log, diff and branch creation
+## Build the EXE
+
+Requirements for building:
+- Windows
+- Node.js 18+
+- npm
+
+From this folder:
+
+```powershell
+npm install
+npm run package:win
+```
+
+Output:
+
+`release/DinoEngine.exe`
+
+Or run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build-win.ps1
+```
+
+## Run the EXE
+
+Open Command Prompt or PowerShell in the project you want DinoEngine to control:
+
+```powershell
+$env:DINOENGINE_ROOT = "C:\\MyProject"
+.\\DinoEngine.exe
+```
+
+If `DINOENGINE_ROOT` is not set, DinoEngine uses the current working directory.
+
+Default API:
+
+`http://127.0.0.1:4387`
+
+The server remains localhost-only by default.
+
+## What this package is
+
+The EXE is the DinoEngine server packaged with its Node runtime, so the target machine does not need Node.js installed just to run the built EXE.
+
+For GPT/agent integration, the next layer is a native MCP adapter/connector. The EXE itself does not automatically become connected to ChatGPT merely by existing on Windows.
+
+## v0.3 capabilities
+
+- Project tree
+- File read/write/delete
+- Folder creation
+- Command execution
+- Runtime detection
+- Project inspection
+- Git status/log/diff/branch
 - Health endpoint
-- Local-only binding by default
-
-Run:
-node server.js
-
-Optional workspace on Windows:
-set DINOENGINE_ROOT=C:\path\to\project
-node server.js
-
-API: http://127.0.0.1:4387
-
-V3 target: native MCP transport, structured permissions, build/test orchestration and Windows EXE packaging.
+- Standalone Windows EXE packaging
