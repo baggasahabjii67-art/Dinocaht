@@ -1,0 +1,9 @@
+{
+  "name":"DinoEngine",
+  "version":"0.5.0",
+  "protocol":"MCP",
+  "endpoint":"http://127.0.0.1:4387/mcp",
+  "description":"Local GPT-controlled web development and publishing engine.",
+  "capabilities":["create websites","edit files","run builds","test projects","git operations","publish websites"],
+  "note":"This manifest describes the local MCP server. A ChatGPT connector must be registered/configured to connect to the endpoint; the EXE alone cannot create a remote ChatGPT integration."
+}
