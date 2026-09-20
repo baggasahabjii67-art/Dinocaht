@@ -1,30 +1,31 @@
-# DinoEngine v0.6 — GPT visual web/app builder
-DinoEngine v0.6 adds a visual design layer, animation timelines and artifact building.
+# DinoEngine v0.7 — professional web + Godot 2D engine
 
-## One-prompt workflow
-GPT can plan a professional UI, create files, use the paint canvas as a design layer, generate animations from keyframes, run builds/tests, fix errors, Git commit/push and publish.
+DinoEngine v0.7 expands the GPT-controlled development engine with professional web-building helpers, engine self-modification, Godot 2D project tooling and a branded dinosaur EXE icon.
 
-## Visual tools
-- `ui_paint`: stores hand-drawn strokes/paint notes that GPT can use as a UI reference.
-- `ui_read`: reads saved design canvases.
-- `ui_export_svg`: converts a painted canvas into SVG.
-- `animation_create`: creates named timelines with tracks and keyframes.
-- `animation_read`: reads timelines.
-- `animation_export_css`: converts keyframes into CSS @keyframes.
+## Professional website tools
+- `professional_scaffold` — generates a responsive, semantic, accessible starter with navigation, hero, cards, responsive CSS, reduced-motion handling and clean structure.
+- `website_audit` — checks common production issues such as viewport, title, language and missing image alt text.
+- Existing file, Git, build, deployment, paint and animation tools remain available.
+- GPT can combine these tools into a design → code → audit → fix → build → publish loop.
 
-Example animation keyframe shape:
-`{"tracks":[{"target":".hero","keyframes":[{"at":0,"css":{"opacity":0,"transform":"translateY(30px)"}},{"at":700,"css":{"opacity":1,"transform":"translateY(0)"}}]}]}`
+## Engine modification
+- `engine_patch` explicitly lets GPT modify DinoEngine source.
+- GPT can add a feature, patch a bug, run the engine build/tests, commit the change and continue improving the engine.
+- File operations remain confined to `DINOENGINE_ROOT`.
 
-## App/file building
-- `build_artifact` supports EXE, APK, AAB, or a custom command.
-- EXE/APK/AAB builds use the project's installed toolchain. APK/AAB normally require an Android/Gradle project and Android SDK; EXE requires the project's appropriate packager/build tool.
-- A truly universal “any file to EXE/APK” converter is not possible without knowing the source/runtime. DinoEngine instead detects/uses the project's toolchain and accepts custom build commands.
+## Godot 2D
+- `godot_create_2d` creates a small Godot 2D starter project with `project.godot`, a scene and GDScript.
+- `godot_run` launches the installed Godot command/editor.
+- `godot_export` exports using an installed Godot preset.
+- The engine uses the installed Godot SDK/editor rather than embedding Godot itself.
+
+## EXE branding
+The Windows build generates a DinoEngine dinosaur icon and applies it to `DinoEngine.exe` during GitHub Actions packaging.
 
 ## MCP / GPT
-- Local MCP endpoint: http://127.0.0.1:4387/mcp
-- Protocol: DinoMCP/1.0 over JSON-RPC
-- `gpt-connector.json` describes the connector.
-The EXE itself does not automatically become a ChatGPT plugin. A compatible ChatGPT connector must be configured to reach the endpoint; remote access also needs an appropriate secure transport layer.
+- Local endpoint: `http://127.0.0.1:4387/mcp`
+- Protocol: DinoMCP/1.0 over JSON-RPC.
+- A compatible ChatGPT connector still has to be configured; the EXE alone does not automatically register itself as a ChatGPT plugin.
 
-## Safety
-DinoEngine is localhost-only by default and confines file operations to DINOENGINE_ROOT. Commands run with the local user's permissions, so connect it to an AI only when you trust the requested operations.
+## Security
+DinoEngine is localhost-only by default. Commands run with the local user's permissions, so only connect an AI to a workspace you trust.
