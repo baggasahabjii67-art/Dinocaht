@@ -2426,7 +2426,7 @@ body.layout-split .grid{grid-template-columns:repeat(2,minmax(0,1fr))} body.layo
   async function login(){
     const dinoId=$("loginDinoId").value.trim().toUpperCase(); if(!dinoId)return authError("Enter your permanent Dino ID.");
     authError(""); $("loginBtn").disabled=true; $("loginBtn").textContent="Signing in…";
-    try{const d=await api("/api/auth/login",{method:"POST",body:JSON.stringify({dinoId})}); await finishLogin(d);}catch(e){authError(e.message)}finally{$("loginBtn").disabled=false;$ ("loginBtn").textContent="Sign in";}
+    try{const d=await api("/api/login",{method:"POST",body:JSON.stringify({dinoId})}); await finishLogin(d);}catch(e){authError(e.message)}finally{$("loginBtn").disabled=false;$ ("loginBtn").textContent="Sign in";}
   }
   $("registerBtn").onclick=register; $("loginBtn").onclick=login;
 
