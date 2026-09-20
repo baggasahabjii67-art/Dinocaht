@@ -3,7 +3,10 @@ services:
     name: dinochat-server
     runtime: node
     plan: free
+
     buildCommand: npm install
     startCommand: npm start
+
     healthCheckPath: /api/health
+
     autoDeploy: true
