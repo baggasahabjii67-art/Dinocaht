@@ -1,0 +1,21 @@
+{
+  "name": "dinoengine",
+  "version": "0.9.0",
+  "private": true,
+  "description": "DinoEngine GPT-controlled professional web, visual design, Godot 2D and MCP app engine",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "package:win": "pkg . --targets node18-win-x64 --output release/DinoEngine.exe",
+    "package:win:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-win.ps1",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.6.0",
+    "rcedit": "^4.0.1"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name":"DinoEngine",
+  "version":"0.8.0",
+  "protocol":"MCP",
+  "transport":"remote HTTPS MCP",
+  "localEndpoint":"http://127.0.0.1:4387/mcp",
+  "description":"GPT-controlled professional web, visual design, Godot 2D and build engine.",
+  "capabilities":["professional web generation","drawing and layers","animation","Godot 2D","engine modification","EXE/APK/AAB builds","Git","deployment"],
+  "chatgptSetup":{"type":"custom MCP app","developerModeRequired":true,"endpoint":"REPLACE_WITH_SECURE_REMOTE_MCP_URL","localMachines":"Use a supported Secure MCP Tunnel; ChatGPT cannot directly reach 127.0.0.1."},
+  "actions":["read","write","modify","run","build","deploy"],
+  "security":"Review write/execute permissions before publishing."
+}

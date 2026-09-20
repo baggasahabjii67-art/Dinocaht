@@ -1,0 +1,157 @@
+const http=require("http"),fsp=require("fs/promises"),fs=require("fs"),path=require("path"),crypto=require("crypto"),{exec,spawn}=require("child_process");
+const VERSION="0.9.0",PORT=Number(process.env.DINOENGINE_PORT||4387),ROOT=path.resolve(process.env.DINOENGINE_ROOT||process.cwd()),MAX=15*1024*1024;
+const RUNTIMES=[["node","--version"],["npm","--version"],["python","--version"],["py","--version"],["java","--version"],["javac","--version"],["gradle","--version"],["adb","--version"],["gcc","--version"],["git","--version"],["vercel","--version"],["netlify","--version"]];
+const safe=p=>{const x=path.resolve(ROOT,p||"");if(x!==ROOT&&!x.startsWith(ROOT+path.sep))throw Error("Path escapes workspace");return x};
+const out=(r,s,d)=>{const b=JSON.stringify(d,null,2);r.writeHead(s,{"Content-Type":"application/json","Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"Content-Type"});r.end(b)};
+const body=q=>new Promise((ok,no)=>{let d="";q.on("data",c=>{d+=c;if(d.length>MAX)no(Error("Request too large"))});q.on("end",()=>{try{ok(d?JSON.parse(d):{})}catch(e){no(Error("Invalid JSON"))}});q.on("error",no)});
+const run=(c,cwd=ROOT,t=120000)=>new Promise(res=>exec(String(c),{cwd:safe(cwd),windowsHide:true,maxBuffer:25e6,timeout:Number(t)||120000},(e,stdout,stderr)=>res({ok:!e,code:e?.code??0,stdout,stderr})));
+async function tree(dir=ROOT,rel=""){const a=[];for(const e of await fsp.readdir(dir,{withFileTypes:true})){if(["node_modules",".git","release",".dinoengine"].includes(e.name))continue;const p=path.join(rel,e.name);a.push({path:p.replaceAll(path.sep,"/"),type:e.isDirectory()?"folder":"file"});if(e.isDirectory())a.push(...await tree(path.join(dir,e.name),p))}return a}
+async function filesWrite(files){if(!Array.isArray(files)||!files.length)throw Error("files required");const w=[];for(const x of files){const f=safe(x.path);await fsp.mkdir(path.dirname(f),{recursive:true});await fsp.writeFile(f,String(x.content??""),"utf8");w.push(x.path)}return{ok:true,written:w}}
+async function git(c){return run("git "+c)}
+async function runtimes(){const o={};for(const [n,c] of RUNTIMES)o[n]=await run(c,ROOT,10000);return o}
+
+const uiDir=".dinoengine/ui";
+async function uiRead(file){const p=safe(path.join(uiDir,file));try{return JSON.parse(await fsp.readFile(p,"utf8"))}catch(e){if(e.code==="ENOENT")return null;throw e}}
+async function uiWrite(file,data){const p=safe(path.join(uiDir,file));await fsp.mkdir(path.dirname(p),{recursive:true});await fsp.writeFile(p,JSON.stringify(data,null,2),"utf8");return{ok:true,file:path.join(uiDir,file).replaceAll(path.sep,"/")}}
+function svgFromPaint(strokes,w=1440,h=900){const esc=s=>String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;");let z=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;for(const s of strokes||[]){if(!Array.isArray(s.points)||s.points.length<2)continue;z+=`<polyline fill="none" stroke="${esc(s.color||"#111")}" stroke-width="${Number(s.size||4)}" stroke-linecap="round" stroke-linejoin="round" points="${s.points.map(p=>p[0]+","+p[1]).join(" ")}"/>`}return z+"</svg>"}
+async function paint(args){const canvas={name:String(args.name||"canvas"),width:Number(args.width||1440),height:Number(args.height||900),background:args.background||"transparent",strokes:args.strokes||[],updatedAt:new Date().toISOString()};return uiWrite("canvas-"+canvas.name+".json",canvas)}
+async function animation(args){const a={name:String(args.name||"animation"),duration:Number(args.duration||1000),easing:String(args.easing||"ease"),tracks:Array.isArray(args.tracks)?args.tracks:[],updatedAt:new Date().toISOString()};return uiWrite("animation-"+a.name+".json",a)}
+function cssAnimation(a){const frames=[];for(const t of a.tracks||[]){for(const k of t.keyframes||[])frames.push(k)}frames.sort((x,y)=>Number(x.at)-Number(y.at));let body="";for(const k of frames){const pct=(Number(k.at)/(a.duration||1000)*100).toFixed(2);const props=Object.entries(k.css||{}).map(([k,v])=>k+":"+v+";").join("");body+=pct+"%{"+props+"}"}return "@keyframes "+a.name+"{"+body+"}"}
+async function exportAnimation(args){const a=await uiRead("animation-"+String(args.name)+".json");if(!a)throw Error("Animation not found");const css=cssAnimation(a);const file=String(args.file||"animations.css");await fsp.writeFile(safe(file),css,"utf8");return{ok:true,file,css}}
+async function buildArtifact(args){const target=String(args.target||"").toLowerCase();const command=args.command||({exe:process.platform==="win32"?"npm run build && npm run package:win":"npm run build && npm run package",apk:"gradlew.bat assembleRelease",aab:"gradlew.bat bundleRelease"}[target]);if(!command)throw Error("Use target exe/apk/aab or provide command");return{target,result:await run(command,ROOT,Number(args.timeout)||600000)}}
+async function websiteCreate(a){const n=String(a.name||"website").replace(/[^a-z0-9_-]/gi,"-").toLowerCase(),d=String(a.directory||n);await fsp.mkdir(safe(d),{recursive:true});return filesWrite((a.files||[]).map(x=>({path:path.posix.join(d,x.path),content:x.content})))}
+async function publish(a){const p=String(a.provider||"github-pages");if(p==="github-pages"||p==="github"){const b=String(a.branch||"gh-pages");let r=await git("checkout "+JSON.stringify(b));if(!r.ok)r=await git("checkout -B "+JSON.stringify(b));if(!r.ok)return r;const c=await git("add -A && git commit -m "+JSON.stringify(a.message||"Publish website"));const push=await git("push -u origin "+JSON.stringify(b));return{provider:p,branch:b,commit:c,push}}if(p==="vercel")return run("vercel --prod --yes",ROOT,600000);if(p==="netlify")return run("netlify deploy --prod",ROOT,600000);throw Error("Unsupported provider")}
+
+
+// v7 professional web, engine-self-modification and Godot 2D helpers
+async function enginePatch(args){
+  const p=String(args.path||"server.js");
+  if(!p.includes("dinoengine")&&!p.startsWith("server.js")) throw Error("Engine patch must target an engine file");
+  const target=safe(p);
+  const old=await fsp.readFile(target,"utf8");
+  if(args.find!==undefined){
+    if(!old.includes(String(args.find))) throw Error("find text not found");
+    await fsp.writeFile(target,old.replace(String(args.find),String(args.replace??"")),"utf8");
+  } else if(args.content!==undefined) await fsp.writeFile(target,String(args.content),"utf8");
+  else throw Error("Provide find/replace or content");
+  return {ok:true,path:p,engineModified:true};
+}
+async function professionalScaffold(a){
+  const d=String(a.directory||"website");
+  const files=[
+    ["index.html",`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="${String(a.description||"Professional website")}"><title>${String(a.title||"Dino Website")}</title><link rel="stylesheet" href="styles.css"></head><body><header class="site-header"><a class="brand" href="#">${String(a.brand||"Dino")}</a><nav aria-label="Main navigation"><a href="#features">Features</a><a href="#about">About</a><a href="#contact">Contact</a></nav></header><main><section class="hero"><div><p class="eyebrow">${String(a.eyebrow||"Built with DinoEngine")}</p><h1>${String(a.hero||"A professional web experience.")}</h1><p class="lead">${String(a.lead||"Fast, responsive and accessible by default.")}</p><a class="cta" href="#features">Explore</a></div><div class="hero-art" aria-hidden="true"></div></section><section id="features" class="grid"><article><h2>Responsive</h2><p>Designed for phone, tablet and desktop.</p></article><article><h2>Accessible</h2><p>Semantic structure, labels and keyboard-friendly controls.</p></article><article><h2>Animated</h2><p>Motion is purposeful and respects reduced-motion preferences.</p></article></section><section id="about"><h2>About</h2><p>Replace this content with your project story.</p></section><section id="contact"><h2>Contact</h2><p>Connect your real contact form or API here.</p></section></main><footer>© DinoEngine</footer><script src="app.js"></script></body></html>`],
+    ["styles.css",`:root{font-family:Inter,system-ui,sans-serif;color:#111;background:#fff;line-height:1.5}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}.site-header{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;padding:18px 6%;background:#fffffff2;backdrop-filter:blur(12px);z-index:5}.site-header nav{display:flex;gap:20px}.site-header a{color:inherit;text-decoration:none}.brand{font-weight:800}.hero{min-height:78vh;display:grid;grid-template-columns:1.2fr .8fr;gap:5vw;align-items:center;padding:8vw 8%;background:linear-gradient(135deg,#f5f7ff,#fff)}.hero h1{font-size:clamp(2.8rem,7vw,6rem);line-height:.95;margin:.2em 0}.lead{font-size:1.2rem;max-width:60ch}.eyebrow{font-weight:700}.cta{display:inline-block;padding:14px 22px;border-radius:999px;background:#111;color:#fff!important}.hero-art{aspect-ratio:1;border-radius:32px;background:radial-gradient(circle at 30% 30%,#fff,#cfd7ff 45%,#777 100%);box-shadow:0 30px 80px #0002}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:8%;}.grid article{padding:28px;border:1px solid #ddd;border-radius:24px;background:#fff}section:not(.hero){max-width:1200px;margin:auto;padding:8%}footer{padding:30px 8%;border-top:1px solid #ddd}@media(max-width:760px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.site-header nav{gap:10px;font-size:.9rem}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}`],
+    ["app.js",`document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const el=document.querySelector(a.getAttribute('href'));if(el){e.preventDefault();el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})}}));`]
+  ];
+  return filesWrite(files.map(x=>({path:path.posix.join(d,x[0]),content:x[1]})));
+}
+async function websiteAudit(a){
+  const d=String(a.directory||"."); const issues=[];
+  const files=await tree(safe(d));
+  const html=files.filter(x=>x.type==="file"&&x.path.toLowerCase().endsWith(".html"));
+  if(!html.length)issues.push({severity:"high",issue:"No HTML entry file found"});
+  for(const h of html){
+    const raw=await fsp.readFile(safe(h.path),"utf8");
+    if(!/<meta[^>]+name=["']viewport/i.test(raw))issues.push({severity:"medium",file:h.path,issue:"Missing viewport meta"});
+    if(!/<title>/i.test(raw))issues.push({severity:"medium",file:h.path,issue:"Missing title"});
+    if(!/<html[^>]+lang=/i.test(raw))issues.push({severity:"medium",file:h.path,issue:"Missing html lang"});
+    const imgs=[...raw.matchAll(/<img\b[^>]*>/gi)].map(x=>x[0]); for(const img of imgs)if(!/\balt=/i.test(img))issues.push({severity:"high",file:h.path,issue:"Image missing alt"});
+    if(/<button\b/i.test(raw)&&!/<button[^>]*type=/i.test(raw))issues.push({severity:"low",file:h.path,issue:"Button type not explicit"});
+  }
+  return {ok:issues.length===0,issues,checked:files.length};
+}
+async function godotCreate2D(a){
+  const d=String(a.directory||"godot-game"); await fsp.mkdir(safe(d),{recursive:true});
+  const project=`[application]\nconfig/name="${String(a.name||"Dino 2D Game")}"\nrun/main_scene="res://Main.tscn"\n[display]\nwindow/size/viewport_width=960\nwindow/size/viewport_height=540\n[rendering]\nrenderer/rendering_method="gl_compatibility"\nrenderer/rendering_method.mobile="gl_compatibility"\n`;
+  const scene=`[gd_scene load_steps=2 format=3]\n\n[ext_resource path="res://main.gd" type="Script" id="1"]\n\n[node name="Main" type="Node2D"]\nscript = ExtResource("1")\n`;
+  const script=`extends Node2D\n\nfunc _ready():\n    queue_redraw()\n\nfunc _draw():\n    draw_rect(Rect2(0,0,960,540), Color("#101522"))\n    draw_circle(Vector2(480,270), 70, Color("#5eead4"))\n    draw_string(ThemeDB.fallback_font, Vector2(40,70), "DinoEngine 2D starter", HORIZONTAL_ALIGNMENT_LEFT, -1, 32, Color.WHITE)\n`;
+  return filesWrite([{path:path.posix.join(d,"project.godot"),content:project},{path:path.posix.join(d,"Main.tscn"),content:scene},{path:path.posix.join(d,"main.gd"),content:script}]);
+}
+async function godotRun(a){const exe=a.command||"godot --editor";return run(exe,a.cwd||ROOT,a.timeout||120000)}
+async function godotExport(a){const preset=String(a.preset||"Linux/X11"),cmd=a.command||("godot --headless --path "+JSON.stringify(a.directory||".")+" --export-release "+JSON.stringify(preset)+" "+JSON.stringify(a.output||"build/game"));return run(cmd,ROOT,a.timeout||600000)}
+
+
+async function drawDocument(a){
+  const doc={name:String(a.name||"canvas"),width:Number(a.width||1440),height:Number(a.height||900),background:a.background||"#ffffff",
+    layers:Array.isArray(a.layers)?a.layers:[],activeLayer:a.activeLayer||null,grid:a.grid||{enabled:false,size:16},
+    guides:Array.isArray(a.guides)?a.guides:[],updatedAt:new Date().toISOString()};
+  return uiWrite("draw-"+doc.name+".json",doc);
+}
+async function drawRead(a){return uiRead("draw-"+String(a.name||a.file||"canvas").replace(/^draw-/,"").replace(/\.json$/,"")+".json")}
+async function drawExportSvg(a){
+  const d=await drawRead(a); if(!d)throw Error("Drawing not found");
+  const esc=s=>String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+  let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+d.width+' '+d.height+'"><rect width="100%" height="100%" fill="'+esc(d.background)+'"/>';
+  for(const l of d.layers||[]){if(l.visible===false)continue;for(const o of l.objects||[]){
+    if(o.type==="rect")svg+='<rect x="'+o.x+'" y="'+o.y+'" width="'+o.width+'" height="'+o.height+'" rx="'+(o.radius||0)+'" fill="'+esc(o.fill||"none")+'" stroke="'+esc(o.stroke||"none")+'" stroke-width="'+(o.strokeWidth||0)+'"/>';
+    else if(o.type==="circle")svg+='<circle cx="'+o.x+'" cy="'+o.y+'" r="'+o.radius+'" fill="'+esc(o.fill||"none")+'" stroke="'+esc(o.stroke||"none")+'" stroke-width="'+(o.strokeWidth||0)+'"/>';
+    else if(o.type==="line")svg+='<line x1="'+o.x1+'" y1="'+o.y1+'" x2="'+o.x2+'" y2="'+o.y2+'" stroke="'+esc(o.stroke||"#111")+'" stroke-width="'+(o.strokeWidth||2)+'"/>';
+    else if(o.type==="text")svg+='<text x="'+o.x+'" y="'+o.y+'" fill="'+esc(o.fill||"#111")+'" font-size="'+(o.fontSize||24)+'" font-family="'+esc(o.fontFamily||"sans-serif")+'">'+esc(o.text||"")+'</text>';
+    else if(o.type==="path"||o.type==="pen")svg+='<polyline fill="none" points="'+(o.points||[]).map(p=>p[0]+","+p[1]).join(" ")+'" stroke="'+esc(o.stroke||"#111")+'" stroke-width="'+(o.strokeWidth||4)+'" stroke-linecap="round" stroke-linejoin="round"/>';
+  }}return fsp.writeFile(safe(a.output||"drawing.svg"),svg+"</svg>","utf8").then(()=>({ok:true,file:a.output||"drawing.svg"}));
+}
+async function godotProject(a){
+  const d=String(a.directory||"godot-game"); await fsp.mkdir(safe(d),{recursive:true});
+  const name=String(a.name||"Dino 2D Game");
+  const files=[
+["project.godot",`[application]\nconfig/name="${name}"\nrun/main_scene="res://Main.tscn"\n[display]\nwindow/size/viewport_width=960\nwindow/size/viewport_height=540\n[rendering]\nrenderer/rendering_method="gl_compatibility"\nrenderer/rendering_method.mobile="gl_compatibility"\n[physics]\ncommon/enable_pause_aware_picking=true\n[input]\nmove_left={\"deadzone\":0.5,\"events\":[Object(InputEventKey,\"physical_keycode\":65)]}\nmove_right={\"deadzone\":0.5,\"events\":[Object(InputEventKey,\"physical_keycode\":68)]}\njump={\"deadzone\":0.5,\"events\":[Object(InputEventKey,\"physical_keycode\":32)]}\n`],
+["Main.tscn",`[gd_scene load_steps=2 format=3]\n\n[ext_resource path="res://main.gd" type="Script" id="1"]\n\n[node name="Main" type="Node2D"]\nscript = ExtResource("1")\n`],
+["main.gd",`extends Node2D\n\nvar player=Vector2(480,400)\nvar velocity=Vector2.ZERO\nvar gravity=1200.0\nfunc _ready(): queue_redraw()\nfunc _physics_process(delta):\n    if Input.is_action_pressed("move_left"): velocity.x=-260\n    elif Input.is_action_pressed("move_right"): velocity.x=260\n    else: velocity.x=move_toward(velocity.x,0,1200*delta)\n    if Input.is_action_just_pressed("jump") and player.y>=400: velocity.y=-500\n    velocity.y+=gravity*delta\n    player+=velocity*delta\n    if player.y>400: player.y=400; velocity.y=0\n    queue_redraw()\nfunc _draw():\n    draw_rect(Rect2(0,0,960,540),Color("#101522"))\n    draw_rect(Rect2(0,450,960,90),Color("#25334a"))\n    draw_circle(player,32,Color("#5eead4"))\n    draw_string(ThemeDB.fallback_font,Vector2(30,50),"DinoEngine 2D",HORIZONTAL_ALIGNMENT_LEFT,-1,28,Color.WHITE)\n`]];
+  for(const x of files){const p=path.posix.join(d,x[0]);const full=safe(p);await fsp.mkdir(path.dirname(full),{recursive:true});await fsp.writeFile(full,x[1],"utf8")}return{ok:true,directory:d,files:files.map(x=>path.posix.join(d,x[0]))};
+}
+async function godotTool(a){
+  const action=String(a.action||"");
+  const commands={run:"godot --editor --path "+JSON.stringify(a.directory||"."),
+    play:"godot --path "+JSON.stringify(a.directory||"."),
+    debug:"godot --path "+JSON.stringify(a.directory||"."),
+    export:"godot --headless --path "+JSON.stringify(a.directory||".")+" --export-release "+JSON.stringify(a.preset||"Linux/X11")+" "+JSON.stringify(a.output||"build/game")};
+  if(!commands[action])throw Error("Supported Godot actions: run, play, debug, export");
+  return run(a.command||commands[action],ROOT,a.timeout||600000);
+}
+
+let tunnelProcess=null,tunnelUrl=null;
+const REMOTE_TOKEN=crypto.randomBytes(24).toString("hex");
+const remotePath=()=>"/mcp/"+REMOTE_TOKEN;
+const isRemotePath=u=>u.pathname===remotePath();
+const remoteAuthOk=u=>u.pathname===remotePath();
+function startRemoteTunnel(){
+  return new Promise((resolve,reject)=>{
+    if(tunnelUrl)return resolve({running:true,url:tunnelUrl,endpoint:tunnelUrl+remotePath(),token:REMOTE_TOKEN});
+    const p=spawn("cloudflared",["tunnel","--url","http://127.0.0.1:"+PORT],{windowsHide:true});
+    tunnelProcess=p; let settled=false;
+    const onData=d=>{const m=String(d).match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/i);if(m&&!settled){settled=true;tunnelUrl=m[0];resolve({running:true,url:tunnelUrl,endpoint:tunnelUrl+remotePath(),token:REMOTE_TOKEN});}};
+    p.stdout.on("data",onData);p.stderr.on("data",onData);
+    p.on("error",e=>{if(!settled){settled=true;reject(Error("cloudflared not found: "+e.message))}});
+    p.on("exit",()=>{tunnelProcess=null;tunnelUrl=null});
+    setTimeout(()=>{if(!settled){settled=true;reject(Error("Timed out waiting for cloudflared tunnel"))}},20000);
+  });
+}
+function remoteStop(){try{tunnelProcess?.kill()}catch{} tunnelProcess=null;tunnelUrl=null;return{running:false}};
+
+const S=t=>({type:t});
+const TOOL_DEFS=[
+["workspace_tree","List workspace",{}],["read_file","Read file",{path:S("string")}],["write_file","Write file",{path:S("string"),content:S("string")}],["write_files","Write many files",{files:{type:"array",items:{type:"object"}}}],["delete_file","Delete file",{path:S("string"),recursive:S("boolean")}],["make_folder","Create folder",{path:S("string")}],["run","Run command",{command:S("string"),cwd:S("string"),timeout:S("number")}],["runtimes","Detect runtimes",{}],["project_inspect","Inspect project",{}],["git_status","Git status",{}],["git_log","Git log",{}],["git_diff","Git diff",{}],["git_branch","Git branches",{}],["git_create_branch","Create branch",{name:S("string")}],["git_checkout","Checkout branch",{name:S("string")}],["git_commit","Commit changes",{message:S("string")}],["git_push","Push changes",{remote:S("string"),branch:S("string")}],["git_pull","Pull changes",{remote:S("string"),branch:S("string")}],
+["website_create","Create a complete website from generated files",{name:S("string"),directory:S("string"),files:{type:"array",items:{type:"object"}}}],["website_publish","Publish website",{provider:{type:"string",enum:["github-pages","vercel","netlify"]},branch:S("string"),message:S("string")}],["deploy_command","Run deployment command",{command:S("string"),timeout:S("number")}],
+["ui_paint","Store hand-drawn UI strokes for GPT to use as a visual design layer",{name:S("string"),width:S("number"),height:S("number"),background:S("string"),strokes:{type:"array"} }],
+["ui_read","Read a saved UI canvas",{file:S("string")}],["ui_export_svg","Turn a saved paint canvas into SVG",{file:S("string"),output:S("string")}],
+["animation_create","Create an animation timeline from keyframes",{name:S("string"),duration:S("number"),easing:S("string"),tracks:{type:"array"}}],["animation_read","Read an animation timeline",{name:S("string")}],["animation_export_css","Export animation timeline to CSS",{name:S("string"),file:S("string")}],
+["build_artifact","Build an EXE, APK, AAB, or custom artifact",{target:S("string"),command:S("string"),timeout:S("number")}],
+["professional_scaffold","Create a polished responsive accessible website starter",{directory:S("string"),brand:S("string"),title:S("string"),hero:S("string"),lead:S("string"),description:S("string")}],
+["website_audit","Audit a website for common professional/accessibility issues",{directory:S("string")}],
+["engine_patch","Modify DinoEngine source so GPT can add engine features",{path:S("string"),find:S("string"),replace:S("string"),content:S("string")}],
+["godot_create_2d","Create a Godot 2D game starter project",{directory:S("string"),name:S("string")}],
+["godot_run","Launch a Godot project/editor",{cwd:S("string"),command:S("string"),timeout:S("number")}],
+["godot_export","Export a Godot project using an installed export preset",{directory:S("string"),preset:S("string"),output:S("string"),command:S("string"),timeout:S("number")} ],
+["draw_create","Create structured drawing with layers, objects, guides and grid",{name:S("string"),width:S("number"),height:S("number"),background:S("string"),layers:{type:"array"},activeLayer:S("string"),grid:{type:"object"},guides:{type:"array"}}],
+["draw_read","Read a structured drawing",{name:S("string")}],["draw_export_svg","Export drawing objects to SVG",{name:S("string"),output:S("string")}],["draw_undo_snapshot","Store a reversible drawing snapshot",{name:S("string"),snapshot:{type:"object"}}],["draw_tools","Describe professional drawing tools",{}],
+["godot_project","Create an essential-feature Godot 2D starter",{directory:S("string"),name:S("string")}],["godot_tool","Run/play/debug/export a Godot project",{action:S("string"),directory:S("string"),preset:S("string"),output:S("string"),command:S("string"),timeout:S("number")}],["godot_scene","Write a Godot scene/resource/script file",{directory:S("string"),path:S("string"),content:S("string")}],["godot_feature_plan","Create a Godot feature plan",{directory:S("string"),features:{type:"array"}}],["gpt_plugin_manifest","Return configuration needed to register DinoEngine as a ChatGPT MCP app",{publicMcpUrl:S("string")}],["remote_start","Start secure Cloudflare quick tunnel",{ }],["remote_stop","Stop remote tunnel",{ }],["remote_status","Get remote tunnel status",{ }],["engine_info","Get engine capabilities",{}]
+].map(([name,description,properties])=>({name,description,inputSchema:{type:"object",properties,additionalProperties:true}}));
+
+async function tool(n,a={}){
+switch(n){
+case"workspace_tree":return{root:ROOT,tree:await tree()};case"read_file":return{path:a.path,content:await fsp.readFile(safe(a.path),"utf8")};case"write_file":return filesWrite([{path:a.path,content:a.content}]);case"write_files":return filesWrite(a.files);case"delete_file":await fsp.rm(safe(a.path),{recursive:!!a.recursive,force:true});return{ok:true};case"make_folder":await fsp.mkdir(safe(a.path),{recursive:true});return{ok:true};case"run":return run(a.command,a.cwd||ROOT,a.timeout);case"runtimes":return runtimes();case"project_inspect":{const t=await tree();return{root:ROOT,fileCount:t.filter(x=>x.type==="file").length,hasGit:fs.existsSync(path.join(ROOT,".git")),files:t.filter(x=>x.type==="file").map(x=>x.path)}}case"git_status":return git("status --short --branch");case"git_log":return git("log --oneline -20");case"git_diff":return git("diff");case"git_branch":return git("branch");case"git_create_branch":return git("branch "+JSON.stringify(a.name));case"git_checkout":return git("checkout "+JSON.stringify(a.name));case"git_commit":return git("add -A && git commit -m "+JSON.stringify(a.message||"DinoEngine commit"));case"git_push":return git("push "+(a.remote||"origin")+" "+(a.branch||"HEAD"));case"git_pull":return git("pull "+(a.remote||"origin")+" "+(a.branch||""));case"website_create":return websiteCreate(a);case"website_publish":return publish(a);case"deploy_command":return run(a.command,ROOT,a.timeout||600000);
+case"ui_paint":return paint(a);case"ui_read":return uiRead(a.file||("canvas-"+a.name+".json"));case"ui_export_svg":{const c=await uiRead(a.file);if(!c)throw Error("Canvas not found");const f=String(a.output||"ui-paint.svg");await fsp.writeFile(safe(f),svgFromPaint(c.strokes,c.width,c.height),"utf8");return{ok:true,file:f}}case"animation_create":return animation(a);case"animation_read":return uiRead("animation-"+a.name+".json");case"animation_export_css":return exportAnimation(a);case"build_artifact":return buildArtifact(a);case"draw_create":return drawDocument(a);case"draw_read":return drawRead(a);case"draw_export_svg":return drawExportSvg(a);case"draw_undo_snapshot":return uiWrite("snapshot-"+String(a.name)+".json",a.snapshot||{});case"draw_tools":return{tools:["select","move","scale","rotate","pen","pencil","brush","eraser","line","rectangle","rounded-rectangle","ellipse","polygon","star","bezier","text","fill","gradient","eyedropper","crop","hand","zoom","ruler","grid","guides","layers","group","ungroup","lock","hide","duplicate","undo","redo","snap","import-image","export-png","export-svg"]};case"godot_project":return godotProject(a);case"godot_tool":return godotTool(a);case"godot_scene":{const p=path.posix.join(String(a.directory||"godot-game"),String(a.path||"New.tscn"));const full=safe(p);await fsp.mkdir(path.dirname(full),{recursive:true});await fsp.writeFile(full,String(a.content||""),"utf8");return{ok:true,file:p}}case"godot_feature_plan":return{directory:a.directory||"godot-game",features:a.features||["scene/node system","sprites","Sprite2D","AnimatedSprite2D","TileMap/TileMapLayer","2D physics","CharacterBody2D","RigidBody2D","Area2D","collision shapes","Camera2D","AnimationPlayer","AnimationTree","audio","particles","UI/Control","signals","input actions","resources","GDScript","debugging","pause","save/load","export presets"]};case"gpt_plugin_manifest":return{type:"MCP app",name:"DinoEngine",transport:"remote MCP",url:a.publicMcpUrl||tunnelUrl?(String(a.publicMcpUrl||tunnelUrl)+remotePath()):"REPLACE_WITH_SECURE_REMOTE_MCP_URL",actions:"read/write/execute/build/deploy",note:"Use the exact endpoint returned by remote_start. The random path is the access secret; keep it private."};case"remote_start":return startRemoteTunnel();case"remote_stop":return remoteStop();case"remote_status":return{running:!!(tunnelProcess&&tunnelUrl),url:tunnelUrl,endpoint:tunnelUrl?(tunnelUrl+remotePath()):null,token:REMOTE_TOKEN};case"professional_scaffold":return professionalScaffold(a);case"website_audit":return websiteAudit(a);case"engine_patch":return enginePatch(a);case"godot_create_2d":return godotCreate2D(a);case"godot_run":return godotRun(a);case"godot_export":return godotExport(a);case"engine_info":return{engine:"DinoEngine",version:VERSION,workspace:ROOT,protocol:"DinoMCP/1.0",capabilities:TOOL_DEFS.map(x=>x.name),gptIntegration:"MCP connector",artifacts:["exe","apk","aab","custom"],ui:["paint","layers","selection","transform","pen","pencil","brush","eraser","shapes","text","fill","gradient","eyedropper","crop","bezier","grid","guides","ruler","snap","groups","undo-redo","import-export","svg","png","animation-timeline","css-keyframes"],web:["responsive-scaffold","accessibility-audit","design-system-starter"],engineModification:true,godot:["scene-tree","sprites","animated-sprites","tilemaps","2d-physics","collisions","character-body","rigid-body","areas","camera","animation-player","animation-tree","audio","particles","UI-controls","signals","input-map","resources","GDScript","debug","pause","save-load","export-presets","run","play"]};default:throw Error("Unknown tool: "+n)}}
+async function mcp(req,res,b){const id=b.id??null;try{if(b.method==="initialize")return out(res,200,{jsonrpc:"2.0",id,result:{protocolVersion:"2025-06-18",serverInfo:{name:"DinoEngine",version:VERSION},capabilities:{tools:{}}}});if(b.method==="tools/list")return out(res,200,{jsonrpc:"2.0",id,result:{tools:TOOL_DEFS}});if(b.method==="tools/call"){const z=await tool(b.params?.name,b.params?.arguments||{});return out(res,200,{jsonrpc:"2.0",id,result:{content:[{type:"text",text:JSON.stringify(z,null,2)}],structuredContent:z}})}if(b.method==="ping")return out(res,200,{jsonrpc:"2.0",id,result:{}});return out(res,200,{jsonrpc:"2.0",id,error:{code:-32601,message:"Method not found"}})}catch(e){return out(res,200,{jsonrpc:"2.0",id,error:{code:-32000,message:e.message}})}}
+async function route(q,r){const u=new URL(q.url,"http://localhost");if(q.method==="OPTIONS"){r.writeHead(204,{"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"Content-Type"});return r.end()}const b=["POST","PUT","PATCH","DELETE"].includes(q.method)?await body(q):{};if(q.method==="POST"&&(u.pathname==="/mcp"||isRemotePath(u))){if(isRemotePath(u)&&!remoteAuthOk(u))return out(r,401,{error:"Unauthorized"});return mcp(q,r,b);}if(q.method==="GET"&&u.pathname==="/")return out(r,200,{engine:"DinoEngine",version:VERSION,workspace:ROOT,protocol:"DinoMCP/1.0",mcp:"/mcp",features:["GPT website builder","professional responsive scaffold","website audit","paint UI","animation timeline","engine self-modification","Godot 2D games","EXE/APK/AAB build"]});if(q.method==="GET"&&u.pathname==="/api/health")return out(r,200,{ok:true,pid:process.pid,node:process.version,version:VERSION});if(q.method==="GET"&&u.pathname==="/api/tree")return out(r,200,await tool("workspace_tree"));if(q.method==="GET"&&u.pathname==="/api/runtime")return out(r,200,{runtimes:await runtimes()});if(q.method==="GET"&&u.pathname==="/api/file")return out(r,200,await tool("read_file",{path:u.searchParams.get("path")}));if(q.method==="POST"&&u.pathname==="/api/file")return out(r,200,await tool("write_file",b));if(q.method==="POST"&&u.pathname==="/api/run")return out(r,200,await tool("run",b));return out(r,404,{error:"Not found"})}
+process.on("exit",()=>{try{tunnelProcess?.kill()}catch{}});
+http.createServer((q,r)=>route(q,r).catch(e=>out(r,500,{error:e.message}))).listen(PORT,"127.0.0.1",async()=>{console.log("DinoEngine v"+VERSION+" | "+ROOT+" | http://127.0.0.1:"+PORT);if(process.env.DINOENGINE_AUTO_REMOTE==="1"){try{const z=await startRemoteTunnel();console.log("REMOTE MCP ENDPOINT: "+z.endpoint)}catch(e){console.error("REMOTE MCP START FAILED: "+e.message)}}});
