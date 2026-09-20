@@ -3,7 +3,7 @@ name: Build DinoEngine Windows EXE
 on:
   push:
     branches:
-      - dinoengine-v3
+      - dinoengine-v4
   workflow_dispatch:
 
 jobs:
@@ -12,36 +12,41 @@ jobs:
     defaults:
       run:
         working-directory: dinoengine
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: dinoengine/package.json
-
       - name: Install dependencies
         run: npm install
-
       - name: Build EXE
         run: npm run package:win
-
       - name: Verify EXE
         shell: powershell
         run: |
-          if (-not (Test-Path "release/DinoEngine.exe")) {
-            throw "DinoEngine.exe was not created."
-          }
+          if (-not (Test-Path "release/DinoEngine.exe")) { throw "DinoEngine.exe was not created." }
           Get-Item "release/DinoEngine.exe" | Format-List Name,Length,FullName
-
+      - name: Smoke test EXE
+        shell: powershell
+        run: |
+          $p = Start-Process -FilePath "release/DinoEngine.exe" -PassThru -WindowStyle Hidden
+          Start-Sleep -Seconds 2
+          try {
+            $health = Invoke-RestMethod "http://127.0.0.1:4387/api/health"
+            if (-not $health.ok) { throw "Health check failed." }
+            $mcp = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:4387/mcp" -ContentType "application/json" -Body '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+            if (-not $mcp.result.tools) { throw "MCP tools check failed." }
+          } finally {
+            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          }
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: DinoEngine-Windows-x64
+          name: DinoEngine-v4-Windows-x64
           path: dinoengine/release/DinoEngine.exe
           if-no-files-found: error
           retention-days: 30
