@@ -2,7 +2,7 @@ name: Build DinoEngine Windows EXE
 on:
   push:
     branches:
-      - dinoengine-v6
+      - dinoengine-v7
   workflow_dispatch:
 jobs:
   build-windows:
@@ -21,6 +21,11 @@ jobs:
         run: npm install
       - name: Build EXE
         run: npm run package:win
+      - name: Apply DinoEngine dinosaur icon
+        shell: powershell
+        run: |
+          magick "assets/dinoengine-icon.svg" -background none -define icon:auto-resize=256,128,64,48,32,16 "assets/dinoengine-icon.ico"
+          npx rcedit "release/DinoEngine.exe" --set-icon "assets/dinoengine-icon.ico"
       - name: Verify
         shell: powershell
         run: |
@@ -37,11 +42,11 @@ jobs:
             if(-not $h.ok){throw "Health failed"}
             $m=Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:4387/mcp" -ContentType "application/json" -Body '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
             if(-not $m.result.tools){throw "MCP tools missing"}
-            foreach($n in @("ui_paint","animation_create","build_artifact")){if(-not ($m.result.tools.name -contains $n)){throw "$n missing"}}
+            foreach($n in @("ui_paint","animation_create","build_artifact","professional_scaffold","website_audit","engine_patch","godot_create_2d")){if(-not ($m.result.tools.name -contains $n)){throw "$n missing"}}
           } finally { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
       - uses: actions/upload-artifact@v4
         with:
-          name: DinoEngine-v6-Windows-x64
+          name: DinoEngine-v7-Windows-x64
           path: dinoengine/release/DinoEngine.exe
           if-no-files-found: error
           retention-days: 30
