@@ -1,8 +1,8 @@
 {
   "name": "dinoengine",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
-  "description": "DinoEngine GPT-controlled professional web, visual design, Godot 2D and artifact engine with MCP bridge",
+  "description": "DinoEngine GPT-controlled professional web, visual design, Godot 2D and MCP app engine",
   "main": "server.js",
   "bin": "server.js",
   "scripts": {
