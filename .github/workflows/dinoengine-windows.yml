@@ -1,11 +1,9 @@
 name: Build DinoEngine Windows EXE
-
 on:
   push:
     branches:
-      - dinoengine-v5
+      - dinoengine-v6
   workflow_dispatch:
-
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -13,50 +11,37 @@ jobs:
       run:
         working-directory: dinoengine
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: dinoengine/package.json
-
-      - name: Install dependencies
+      - name: Install
         run: npm install
-
       - name: Build EXE
         run: npm run package:win
-
-      - name: Verify EXE
+      - name: Verify
         shell: powershell
         run: |
-          if (-not (Test-Path "release/DinoEngine.exe")) { throw "DinoEngine.exe was not created." }
-          Get-Item "release/DinoEngine.exe" | Format-List Name,Length,FullName
-
-      - name: Smoke test EXE
+          if (-not (Test-Path "release/DinoEngine.exe")) { throw "EXE missing" }
+          Get-Item "release/DinoEngine.exe" | Format-List Name,Length
+      - name: Smoke test
         shell: powershell
         run: |
-          $env:DINOENGINE_ROOT = (Get-Location).Path
-          $p = Start-Process -FilePath "release/DinoEngine.exe" -PassThru -WindowStyle Hidden
+          $env:DINOENGINE_ROOT=(Get-Location).Path
+          $p=Start-Process -FilePath "release/DinoEngine.exe" -PassThru -WindowStyle Hidden
           Start-Sleep -Seconds 2
           try {
-            $health = Invoke-RestMethod "http://127.0.0.1:4387/api/health"
-            if (-not $health.ok) { throw "Health check failed." }
-            $mcp = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:4387/mcp" -ContentType "application/json" -Body '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
-            if (-not $mcp.result.tools) { throw "MCP tools check failed." }
-            $names = $mcp.result.tools.name
-            if (-not ($names -contains "website_create")) { throw "website_create missing." }
-            if (-not ($names -contains "website_publish")) { throw "website_publish missing." }
-          } finally {
-            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
-          }
-
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4
+            $h=Invoke-RestMethod "http://127.0.0.1:4387/api/health"
+            if(-not $h.ok){throw "Health failed"}
+            $m=Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:4387/mcp" -ContentType "application/json" -Body '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+            if(-not $m.result.tools){throw "MCP tools missing"}
+            foreach($n in @("ui_paint","animation_create","build_artifact")){if(-not ($m.result.tools.name -contains $n)){throw "$n missing"}}
+          } finally { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
+      - uses: actions/upload-artifact@v4
         with:
-          name: DinoEngine-v5-Windows-x64
+          name: DinoEngine-v6-Windows-x64
           path: dinoengine/release/DinoEngine.exe
           if-no-files-found: error
           retention-days: 30
