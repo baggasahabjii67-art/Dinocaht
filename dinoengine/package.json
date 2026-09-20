@@ -1,8 +1,8 @@
 {
   "name":"dinoengine",
-  "version":"0.4.0",
+  "version":"0.5.0",
   "private":true,
-  "description":"DinoEngine GPT-controlled local development engine with MCP bridge",
+  "description":"DinoEngine GPT-controlled local website development and publishing engine with MCP bridge",
   "main":"server.js",
   "bin":"server.js",
   "scripts":{
