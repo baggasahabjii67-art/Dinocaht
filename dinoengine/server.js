@@ -109,6 +109,25 @@ async function godotTool(a){
   return run(a.command||commands[action],ROOT,a.timeout||600000);
 }
 
+let tunnelProcess=null,tunnelUrl=null;
+const REMOTE_TOKEN=crypto.randomBytes(24).toString("hex");
+const remotePath=()=>"/mcp/"+REMOTE_TOKEN;
+const isRemotePath=u=>u.pathname===remotePath();
+const remoteAuthOk=u=>u.pathname===remotePath();
+function startRemoteTunnel(){
+  return new Promise((resolve,reject)=>{
+    if(tunnelUrl)return resolve({running:true,url:tunnelUrl,endpoint:tunnelUrl+remotePath(),token:REMOTE_TOKEN});
+    const p=spawn("cloudflared",["tunnel","--url","http://127.0.0.1:"+PORT],{windowsHide:true});
+    tunnelProcess=p; let settled=false;
+    const onData=d=>{const m=String(d).match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/i);if(m&&!settled){settled=true;tunnelUrl=m[0];resolve({running:true,url:tunnelUrl,endpoint:tunnelUrl+remotePath(),token:REMOTE_TOKEN});}};
+    p.stdout.on("data",onData);p.stderr.on("data",onData);
+    p.on("error",e=>{if(!settled){settled=true;reject(Error("cloudflared not found: "+e.message))}});
+    p.on("exit",()=>{tunnelProcess=null;tunnelUrl=null});
+    setTimeout(()=>{if(!settled){settled=true;reject(Error("Timed out waiting for cloudflared tunnel"))}},20000);
+  });
+}
+function remoteStop(){try{tunnelProcess?.kill()}catch{} tunnelProcess=null;tunnelUrl=null;return{running:false}};
+
 const S=t=>({type:t});
 const TOOL_DEFS=[
 ["workspace_tree","List workspace",{}],["read_file","Read file",{path:S("string")}],["write_file","Write file",{path:S("string"),content:S("string")}],["write_files","Write many files",{files:{type:"array",items:{type:"object"}}}],["delete_file","Delete file",{path:S("string"),recursive:S("boolean")}],["make_folder","Create folder",{path:S("string")}],["run","Run command",{command:S("string"),cwd:S("string"),timeout:S("number")}],["runtimes","Detect runtimes",{}],["project_inspect","Inspect project",{}],["git_status","Git status",{}],["git_log","Git log",{}],["git_diff","Git diff",{}],["git_branch","Git branches",{}],["git_create_branch","Create branch",{name:S("string")}],["git_checkout","Checkout branch",{name:S("string")}],["git_commit","Commit changes",{message:S("string")}],["git_push","Push changes",{remote:S("string"),branch:S("string")}],["git_pull","Pull changes",{remote:S("string"),branch:S("string")}],
@@ -125,7 +144,7 @@ const TOOL_DEFS=[
 ["godot_export","Export a Godot project using an installed export preset",{directory:S("string"),preset:S("string"),output:S("string"),command:S("string"),timeout:S("number")} ],
 ["draw_create","Create structured drawing with layers, objects, guides and grid",{name:S("string"),width:S("number"),height:S("number"),background:S("string"),layers:{type:"array"},activeLayer:S("string"),grid:{type:"object"},guides:{type:"array"}}],
 ["draw_read","Read a structured drawing",{name:S("string")}],["draw_export_svg","Export drawing objects to SVG",{name:S("string"),output:S("string")}],["draw_undo_snapshot","Store a reversible drawing snapshot",{name:S("string"),snapshot:{type:"object"}}],["draw_tools","Describe professional drawing tools",{}],
-["godot_project","Create an essential-feature Godot 2D starter",{directory:S("string"),name:S("string")}],["godot_tool","Run/play/debug/export a Godot project",{action:S("string"),directory:S("string"),preset:S("string"),output:S("string"),command:S("string"),timeout:S("number")}],["godot_scene","Write a Godot scene/resource/script file",{directory:S("string"),path:S("string"),content:S("string")}],["godot_feature_plan","Create a Godot feature plan",{directory:S("string"),features:{type:"array"}}],["gpt_plugin_manifest","Return configuration needed to register DinoEngine as a ChatGPT MCP app",{publicMcpUrl:S("string")}],["engine_info","Get engine capabilities",{}]
+["godot_project","Create an essential-feature Godot 2D starter",{directory:S("string"),name:S("string")}],["godot_tool","Run/play/debug/export a Godot project",{action:S("string"),directory:S("string"),preset:S("string"),output:S("string"),command:S("string"),timeout:S("number")}],["godot_scene","Write a Godot scene/resource/script file",{directory:S("string"),path:S("string"),content:S("string")}],["godot_feature_plan","Create a Godot feature plan",{directory:S("string"),features:{type:"array"}}],["gpt_plugin_manifest","Return configuration needed to register DinoEngine as a ChatGPT MCP app",{publicMcpUrl:S("string")}],["remote_start","Start secure Cloudflare quick tunnel",{ }],["remote_stop","Stop remote tunnel",{ }],["remote_status","Get remote tunnel status",{ }],["engine_info","Get engine capabilities",{}]
 ].map(([name,description,properties])=>({name,description,inputSchema:{type:"object",properties,additionalProperties:true}}));
 
 async function tool(n,a={}){
