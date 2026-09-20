@@ -123,7 +123,9 @@ const TOOL_DEFS=[
 ["godot_create_2d","Create a Godot 2D game starter project",{directory:S("string"),name:S("string")}],
 ["godot_run","Launch a Godot project/editor",{cwd:S("string"),command:S("string"),timeout:S("number")}],
 ["godot_export","Export a Godot project using an installed export preset",{directory:S("string"),preset:S("string"),output:S("string"),command:S("string"),timeout:S("number")} ],
-["engine_info","Get engine capabilities",{}]
+["draw_create","Create structured drawing with layers, objects, guides and grid",{name:S("string"),width:S("number"),height:S("number"),background:S("string"),layers:{type:"array"},activeLayer:S("string"),grid:{type:"object"},guides:{type:"array"}}],
+["draw_read","Read a structured drawing",{name:S("string")}],["draw_export_svg","Export drawing objects to SVG",{name:S("string"),output:S("string")}],["draw_undo_snapshot","Store a reversible drawing snapshot",{name:S("string"),snapshot:{type:"object"}}],["draw_tools","Describe professional drawing tools",{}],
+["godot_project","Create an essential-feature Godot 2D starter",{directory:S("string"),name:S("string")}],["godot_tool","Run/play/debug/export a Godot project",{action:S("string"),directory:S("string"),preset:S("string"),output:S("string"),command:S("string"),timeout:S("number")}],["godot_scene","Write a Godot scene/resource/script file",{directory:S("string"),path:S("string"),content:S("string")}],["godot_feature_plan","Create a Godot feature plan",{directory:S("string"),features:{type:"array"}}],["gpt_plugin_manifest","Return configuration needed to register DinoEngine as a ChatGPT MCP app",{publicMcpUrl:S("string")}],["engine_info","Get engine capabilities",{}]
 ].map(([name,description,properties])=>({name,description,inputSchema:{type:"object",properties,additionalProperties:true}}));
 
 async function tool(n,a={}){
