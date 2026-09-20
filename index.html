@@ -1,2546 +1,2996 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>DinoChat</title>
-
-<style>
-/* =========================================================
-   DINOCCHAT — LIGHT SOCIAL UI
-   ========================================================= */
-
-:root{
-    --bg:#effaf3;
-    --card:#ffffff;
-    --card2:#f7fdf9;
-    --text:#173526;
-    --muted:#688073;
-    --primary:#18864b;
-    --primary-dark:#0f6d3b;
-    --soft:#dcf4e5;
-    --border:#cde6d6;
-    --danger:#d9534f;
-    --shadow:0 12px 35px rgba(35,100,65,.10);
-    --pattern:none;
-}
-
-*{
-    box-sizing:border-box;
-}
-
-html,body{
-    margin:0;
-    min-height:100%;
-}
-
-body{
-    font-family:
-        Inter,
-        ui-sans-serif,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-
-    color:var(--text);
-    background-color:var(--bg);
-    background-image:var(--pattern);
-    transition:.25s ease;
-}
-
-button,
-input,
-textarea{
-    font:inherit;
-}
-
-button{
-    cursor:pointer;
-}
-
-button:active{
-    transform:scale(.98);
-}
-
-/* =========================================================
-   INTRO
-   ========================================================= */
-
-#intro{
-    position:fixed;
-    inset:0;
-    z-index:9999;
-
-    display:grid;
-    place-items:center;
-
-    background:var(--bg);
-
-    text-align:center;
-
-    transition:.6s ease;
-}
-
-.intro-box{
-    padding:30px;
-}
-
-.intro-dino{
-    font-size:78px;
-
-    animation:
-        introDino 1s ease-in-out infinite alternate;
-}
-
-@keyframes introDino{
-    from{
-        transform:translateY(0);
-    }
-
-    to{
-        transform:translateY(-14px);
-    }
-}
-
-.intro-box h1{
-    margin:18px 0 8px;
-
-    font-size:
-        clamp(
-            38px,
-            7vw,
-            80px
-        );
-
-    line-height:.95;
-
-    letter-spacing:-4px;
-
-    color:var(--primary);
-}
-
-.intro-box p{
-    color:var(--muted);
-}
-
-/* =========================================================
-   APP
-   ========================================================= */
-
-#app{
-    display:none;
-    min-height:100vh;
-}
-
-/* =========================================================
-   SIDEBAR
-   ========================================================= */
-
-.sidebar{
-    position:fixed;
-
-    top:0;
-    bottom:0;
-    left:0;
-
-    width:250px;
-
-    padding:20px;
-
-    background:rgba(255,255,255,.90);
-
-    backdrop-filter:blur(18px);
-
-    border-right:1px solid var(--border);
-
-    z-index:100;
-}
-
-.brand{
-    display:flex;
-    align-items:center;
-    gap:11px;
-
-    margin-bottom:25px;
-}
-
-.brand-icon{
-    width:46px;
-    height:46px;
-
-    display:grid;
-    place-items:center;
-
-    border-radius:15px;
-
-    background:var(--soft);
-
-    font-size:26px;
-}
-
-.brand-name{
-    font-weight:800;
-}
-
-.brand-sub{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:2px;
-}
-
-.nav{
-    width:100%;
-
-    border:0;
-
-    background:transparent;
-
-    color:var(--muted);
-
-    text-align:left;
-
-    padding:12px 13px;
-
-    margin:3px 0;
-
-    border-radius:12px;
-
-    transition:.2s;
-}
-
-.nav:hover{
-    background:var(--soft);
-    color:var(--primary-dark);
-}
-
-.nav.active{
-    background:var(--soft);
-    color:var(--primary-dark);
-    font-weight:800;
-}
-
-.profile-mini{
-    position:absolute;
-
-    left:20px;
-    right:20px;
-    bottom:18px;
-
-    padding:12px;
-
-    border:1px solid var(--border);
-
-    border-radius:15px;
-
-    background:var(--card2);
-}
-
-.avatar{
-    width:38px;
-    height:38px;
-
-    border-radius:50%;
-
-    display:grid;
-    place-items:center;
-
-    background:var(--soft);
-
-    color:var(--primary);
-
-    font-weight:800;
-
-    float:left;
-
-    margin-right:9px;
-}
-
-.profile-mini strong,
-.profile-mini small{
-    display:block;
-}
-
-.profile-mini small{
-    color:var(--muted);
-    font-size:10px;
-}
-
-/* =========================================================
-   MAIN
-   ========================================================= */
-
-main{
-    margin-left:250px;
-
-    width:calc(100% - 250px);
-
-    min-height:100vh;
-}
-
-.topbar{
-    height:78px;
-
-    position:sticky;
-    top:0;
-
-    z-index:50;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:space-between;
-
-    padding:0 28px;
-
-    background:rgba(239,250,243,.88);
-
-    backdrop-filter:blur(15px);
-
-    border-bottom:1px solid var(--border);
-}
-
-.top-title{
-    margin:0;
-
-    font-size:20px;
-}
-
-.top-sub{
-    margin:3px 0 0;
-
-    color:var(--muted);
-
-    font-size:12px;
-}
-
-.online{
-    color:var(--muted);
-
-    font-size:12px;
-}
-
-.online-dot{
-    display:inline-block;
-
-    width:8px;
-    height:8px;
-
-    border-radius:50%;
-
-    background:#36b66b;
-
-    margin-right:6px;
-}
-
-#content{
-    padding:28px;
-}
-
-/* =========================================================
-   MOBILE MENU
-   ========================================================= */
-
-.mobile-menu{
-    display:none;
-
-    border:1px solid var(--border);
-
-    background:var(--card);
-
-    border-radius:10px;
-
-    padding:8px 11px;
-
-    margin-right:10px;
-}
-
-/* =========================================================
-   PAGES
-   ========================================================= */
-
-.page{
-    display:none;
-}
-
-.page.active{
-    display:block;
-}
-
-/* =========================================================
-   HERO
-   ========================================================= */
-
-.hero{
-    padding:42px;
-
-    min-height:390px;
-
-    display:grid;
-
-    grid-template-columns:
-        minmax(0,1.2fr)
-        minmax(240px,.8fr);
-
-    align-items:center;
-
-    gap:25px;
-
-    border:1px solid var(--border);
-
-    border-radius:27px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #dff5e7,
-            #effaf3,
-            #eaf5ff
-        );
-
-    box-shadow:var(--shadow);
-}
-
-.badge{
-    display:inline-block;
-
-    padding:7px 11px;
-
-    border-radius:99px;
-
-    background:var(--soft);
-
-    color:var(--primary-dark);
-
-    font-size:10px;
-
-    font-weight:800;
-
-    letter-spacing:.3px;
-}
-
-.hero h1{
-    margin:18px 0;
-
-    font-size:
-        clamp(
-            42px,
-            6vw,
-            72px
-        );
-
-    line-height:.95;
-
-    letter-spacing:-4px;
-}
-
-.hero h1 span{
-    color:var(--primary);
-}
-
-.hero p{
-    max-width:570px;
-
-    color:var(--muted);
-
-    line-height:1.7;
-}
-
-.actions{
-    display:flex;
-
-    flex-wrap:wrap;
-
-    gap:9px;
-
-    margin-top:22px;
-}
-
-.btn{
-    border:1px solid var(--border);
-
-    background:var(--card);
-
-    color:var(--text);
-
-    padding:11px 16px;
-
-    border-radius:12px;
-
-    font-weight:700;
-}
-
-.btn:hover{
-    border-color:var(--primary);
-}
-
-.btn.primary{
-    background:var(--primary);
-
-    color:white;
-
-    border-color:var(--primary);
-}
-
-.hero-dino{
-    display:grid;
-    place-items:center;
-}
-
-.dino-circle{
-    width:190px;
-    height:190px;
-
-    border-radius:50%;
-
-    display:grid;
-    place-items:center;
-
-    background:rgba(255,255,255,.75);
-
-    box-shadow:var(--shadow);
-
-    font-size:92px;
-
-    animation:
-        floatingDino 2.5s ease-in-out infinite;
-}
-
-@keyframes floatingDino{
-    0%,100%{
-        transform:translateY(0) rotate(-2deg);
-    }
-
-    50%{
-        transform:translateY(-10px) rotate(2deg);
-    }
-}
-
-/* =========================================================
-   SECTIONS
-   ========================================================= */
-
-.section-title{
-    margin:30px 0 14px;
-}
-
-.section-title h2{
-    margin:0;
-}
-
-.section-title p{
-    margin:4px 0;
-
-    color:var(--muted);
-}
-
-/* =========================================================
-   CARDS
-   ========================================================= */
-
-.grid{
-    display:grid;
-
-    grid-template-columns:
-        repeat(4,minmax(0,1fr));
-
-    gap:14px;
-}
-
-.card{
-    border:1px solid var(--border);
-
-    background:var(--card);
-
-    border-radius:18px;
-
-    padding:20px;
-
-    box-shadow:
-        0 5px 20px rgba(40,100,65,.05);
-
-    transition:.2s ease;
-}
-
-.card:hover{
-    transform:translateY(-2px);
-
-    box-shadow:var(--shadow);
-}
-
-.card h3{
-    margin:10px 0 6px;
-}
-
-.card p{
-    color:var(--muted);
-
-    line-height:1.5;
-}
-
-/* =========================================================
-   CHAT
-   ========================================================= */
-
-.chat-layout{
-    display:grid;
-
-    grid-template-columns:
-        minmax(0,1fr)
-        270px;
-
-    gap:16px;
-}
-
-.chat-box{
-    height:650px;
-
-    display:flex;
-
-    flex-direction:column;
-
-    overflow:hidden;
-
-    border:1px solid var(--border);
-
-    border-radius:19px;
-
-    background:var(--card);
-}
-
-.chat-header{
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    padding:16px 18px;
-
-    border-bottom:1px solid var(--border);
-}
-
-.chat-header strong{
-    display:block;
-}
-
-.chat-header small{
-    color:var(--muted);
-}
-
-.chat-actions{
-    color:var(--muted);
-}
-
-.messages{
-    flex:1;
-
-    overflow:auto;
-
-    padding:18px;
-
-    background:var(--bg);
-}
-
-.empty-chat{
-    text-align:center;
-
-    padding:90px 10px;
-
-    color:var(--muted);
-}
-
-.empty-chat-icon{
-    font-size:55px;
-}
-
-.message{
-    display:flex;
-
-    gap:8px;
-
-    max-width:82%;
-
-    margin-bottom:14px;
-}
-
-.message.mine{
-    margin-left:auto;
-
-    flex-direction:row-reverse;
-}
-
-.bubble{
-    padding:9px 12px;
-
-    border:1px solid var(--border);
-
-    border-radius:14px;
-
-    background:var(--card);
-}
-
-.mine .bubble{
-    background:var(--soft);
-}
-
-.message-name{
-    font-size:12px;
-
-    font-weight:800;
-}
-
-.message-time{
-    margin-left:7px;
-
-    color:var(--muted);
-
-    font-size:10px;
-}
-
-.message-text{
-    margin:5px 0 0;
-
-    white-space:pre-wrap;
-
-    font-size:13px;
-}
-
-.message-controls{
-    margin-top:7px;
-}
-
-.message-controls button{
-    border:0;
-
-    background:transparent;
-
-    color:var(--muted);
-
-    font-size:10px;
-
-    padding:0 4px;
-}
-
-.composer{
-    display:flex;
-
-    gap:8px;
-
-    padding:12px;
-
-    border-top:1px solid var(--border);
-}
-
-.composer textarea{
-    flex:1;
-
-    resize:none;
-
-    min-height:42px;
-
-    max-height:130px;
-
-    padding:10px;
-
-    border:1px solid var(--border);
-
-    border-radius:12px;
-
-    background:var(--card2);
-
-    color:var(--text);
-
-    outline:none;
-}
-
-.composer textarea:focus{
-    border-color:var(--primary);
-}
-
-.send-button{
-    width:44px;
-
-    border:0;
-
-    border-radius:12px;
-
-    background:var(--primary);
-
-    color:white;
-}
-
-/* =========================================================
-   MANGA / REELS
-   ========================================================= */
-
-.page-head{
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:end;
-
-    gap:15px;
-
-    margin-bottom:20px;
-}
-
-.page-head h1{
-    margin:8px 0 3px;
-}
-
-.page-head p{
-    margin:0;
-
-    color:var(--muted);
-}
-
-.manga-grid,
-.feed-grid{
-    display:grid;
-
-    grid-template-columns:
-        repeat(4,minmax(0,1fr));
-
-    gap:16px;
-}
-
-.media-cover{
-    height:190px;
-
-    display:grid;
-
-    place-items:center;
-
-    font-size:60px;
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--soft),
-            var(--bg)
-        );
-}
-
-.item{
-    overflow:hidden;
-
-    padding:0;
-}
-
-.item-info{
-    padding:14px;
-}
-
-.item-info h3{
-    margin:0 0 5px;
-}
-
-.item-info p{
-    margin:0 0 10px;
-}
-
-/* =========================================================
-   SCORES
-   ========================================================= */
-
-.score-card{
-    display:flex;
-
-    align-items:center;
-
-    gap:16px;
-}
-
-.score-number{
-    font-size:34px;
-
-    font-weight:900;
-}
-
-.coins{
-    margin-left:auto;
-
-    font-size:15px;
-}
-
-/* =========================================================
-   ROWS
-   ========================================================= */
-
-.row{
-    display:flex;
-
-    align-items:center;
-
-    justify-content:space-between;
-
-    gap:15px;
-
-    padding:14px;
-
-    border-bottom:1px solid var(--border);
-}
-
-.row:last-child{
-    border-bottom:0;
-}
-
-/* =========================================================
-   ACCOUNT
-   ========================================================= */
-
-.account-card{
-    max-width:650px;
-}
-
-.input-label{
-    display:block;
-
-    margin-top:15px;
-
-    font-size:12px;
-
-    font-weight:800;
-}
-
-.input{
-    width:100%;
-
-    padding:12px;
-
-    margin-top:6px;
-
-    border:1px solid var(--border);
-
-    border-radius:12px;
-
-    background:var(--card2);
-
-    color:var(--text);
-
-    outline:none;
-}
-
-.input:focus{
-    border-color:var(--primary);
-}
-
-.readonly-note{
-    color:var(--muted);
-
-    font-size:11px;
-
-    margin:7px 0 18px;
-}
-
-/* =========================================================
-   THEMES
-   ========================================================= */
-
-.theme-grid{
-    display:grid;
-
-    grid-template-columns:
-        repeat(5,minmax(0,1fr));
-
-    gap:10px;
-}
-
-.theme-button{
-    border:2px solid transparent;
-
-    border-radius:14px;
-
-    padding:7px;
-
-    background:var(--card2);
-
-    text-align:left;
-}
-
-.theme-button:hover{
-    border-color:var(--primary);
-}
-
-.theme-button.selected{
-    border-color:var(--primary);
-}
-
-.theme-preview{
-    height:70px;
-
-    border-radius:9px;
-
-    margin-bottom:7px;
-}
-
-.theme-button strong,
-.theme-button small{
-    display:block;
-}
-
-.theme-button strong{
-    font-size:11px;
-}
-
-.theme-button small{
-    color:var(--muted);
-
-    font-size:10px;
-
-    margin-top:2px;
-}
-
-/* =========================================================
-   SETTINGS
-   ========================================================= */
-
-.setting-row{
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    padding:15px 0;
-
-    border-bottom:1px solid var(--border);
-}
-
-.setting-row:last-child{
-    border-bottom:0;
-}
-
-.setting-title{
-    font-weight:800;
-}
-
-.setting-description{
-    display:block;
-
-    margin-top:3px;
-
-    color:var(--muted);
-
-    font-size:11px;
-}
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media(max-width:1100px){
-
-    .grid,
-    .manga-grid,
-    .feed-grid{
-        grid-template-columns:
-            repeat(2,minmax(0,1fr));
-    }
-
-    .theme-grid{
-        grid-template-columns:
-            repeat(3,minmax(0,1fr));
-    }
-
-    .chat-layout{
-        grid-template-columns:1fr;
-    }
-
-    .chat-side-card{
-        display:none;
-    }
-}
-
-@media(max-width:750px){
-
-    .sidebar{
-        transform:translateX(-105%);
-
-        transition:.25s ease;
-    }
-
-    .sidebar.open{
-        transform:translateX(0);
-    }
-
-    main{
-        margin-left:0;
-
-        width:100%;
-    }
-
-    .mobile-menu{
-        display:block;
-    }
-
-    .topbar{
-        padding:0 14px;
-    }
-
-    #content{
-        padding:14px;
-    }
-
-    .hero{
-        grid-template-columns:1fr;
-
-        padding:27px;
-    }
-
-    .hero-dino{
-        margin-top:20px;
-    }
-
-    .grid,
-    .manga-grid,
-    .feed-grid,
-    .theme-grid{
-        grid-template-columns:1fr;
-    }
-
-    .page-head{
-        align-items:flex-start;
-
-        flex-direction:column;
-    }
-
-    .chat-box{
-        height:
-            calc(
-                100vh - 125px
-            );
-    }
-}
-
-/* =========================================================
-   DINOCCHAT v2 — GLOBAL / AUTH / SOCIAL UPGRADES
-   ========================================================= */
-.auth-screen{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:var(--bg);padding:20px}
-.auth-card{width:min(440px,100%);background:var(--card);border:1px solid var(--border);border-radius:26px;padding:28px;box-shadow:var(--shadow)}
-.auth-brand{font-size:46px;text-align:center}.auth-card h1{text-align:center;margin:8px 0}.auth-card>p{text-align:center;color:var(--muted)}
-.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:20px 0 10px}.auth-tab{border:1px solid var(--border);background:var(--card2);border-radius:12px;padding:11px;font-weight:800}.auth-tab.active{background:var(--soft);color:var(--primary-dark);border-color:var(--primary)}
-.auth-panel{display:none}.auth-panel.active{display:block}.auth-error{color:var(--danger);font-size:12px;min-height:18px;margin-top:8px}.auth-status{font-size:11px;color:var(--muted);text-align:center;margin-top:12px}
-.locked{background:var(--soft)!important;cursor:not-allowed}.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:var(--soft);font-size:11px;font-weight:800}
-.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--border);font-size:12px}.table th{color:var(--muted)}
-.rank-me{background:var(--soft)}.online-mini{font-size:10px;color:var(--muted)}
-.feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.feature-card{border:1px solid var(--border);border-radius:16px;padding:15px;background:var(--card2)}
-.social-form{display:grid;grid-template-columns:130px 1fr auto;gap:8px}.social-list{display:grid;gap:10px;margin-top:14px}.social-item{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--card2)}
-.friend-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.request{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;border-bottom:1px solid var(--border)}
-.layout-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.layout-btn{border:1px solid var(--border);border-radius:14px;padding:13px;background:var(--card2);text-align:left}.layout-btn.selected{border-color:var(--primary);background:var(--soft)}
-.toast{position:fixed;right:20px;bottom:20px;z-index:11000;max-width:360px;background:var(--text);color:var(--card);padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translateY(0)}
-.auth-required{padding:60px 20px;text-align:center}.server-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px}.server-badge i{width:8px;height:8px;border-radius:50%;display:inline-block;background:#d9534f}.server-badge.online i{background:#36b66b}
-body.layout-chatFirst .chat-layout{grid-template-columns:1fr 220px} body.layout-wideChat .chat-layout{grid-template-columns:minmax(0,1.35fr) 220px} body.layout-profileFirst .chat-layout{grid-template-columns:minmax(0,1fr) 320px}
-body.layout-compact #content{padding:18px} body.layout-compact .hero{min-height:300px;padding:28px} body.layout-minimal .sidebar{width:210px} body.layout-minimal main{margin-left:210px;width:calc(100% - 210px)}
-body.layout-split .grid{grid-template-columns:repeat(2,minmax(0,1fr))} body.layout-dashboard .grid{grid-template-columns:repeat(3,minmax(0,1fr))} body.layout-actionFocus .actions{margin-top:12px} body.layout-mobileBar .sidebar{width:225px}
-@media(max-width:900px){.feature-grid,.friend-grid{grid-template-columns:1fr}.layout-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.social-form{grid-template-columns:1fr}.social-form .btn{width:100%}}
-@media(max-width:750px){body.layout-minimal main{margin-left:0;width:100%}.feature-grid{grid-template-columns:1fr}.layout-grid{grid-template-columns:1fr 1fr}}
-
-</style>
-</head>
-
-<body>
-
-<div class="auth-screen" id="authScreen">
-  <div class="auth-card">
-    <div class="auth-brand">🦖</div>
-    <h1>DinoChat</h1>
-    <p>One permanent Dino ID. One global Dino world.</p>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="registerTab">Create Dino</button>
-      <button class="auth-tab" id="loginTab">Sign In</button>
-    </div>
-    <div class="auth-panel active" id="registerPanel">
-      <label class="input-label">Username</label>
-      <input class="input" id="registerUsername" maxlength="24" placeholder="Choose your Dino name">
-      <button class="btn primary" style="width:100%;margin-top:14px" id="registerBtn">Create permanent Dino ID</button>
-    </div>
-    <div class="auth-panel" id="loginPanel">
-      <label class="input-label">Permanent Dino ID</label>
-      <input class="input" id="loginDinoId" placeholder="DINO-XXXXXXXX" autocomplete="off">
-      <button class="btn primary" style="width:100%;margin-top:14px" id="loginBtn">Sign in</button>
-    </div>
-    <div class="auth-error" id="authError"></div>
-    <div class="auth-status" id="authStatus">Connecting to DinoChat server…</div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
-
-
-<!-- =======================================================
-     INTRO
-======================================================= -->
-
-<div id="intro">
-
-    <div class="intro-box">
-
-        <div class="intro-dino">
-            🦖
-        </div>
-
-        <h1>
-            JUST MAKE MANGA
-        </h1>
-
-        <p>
-            DinoChat is loading...
-        </p>
-
-    </div>
-
-</div>
-
-
-<!-- =======================================================
-     APPLICATION
-======================================================= -->
-
-<div id="app">
-
-
-    <!-- SIDEBAR -->
-
-    <aside
-        class="sidebar"
-        id="sidebar"
-    >
-
-        <div class="brand">
-
-            <div class="brand-icon">
-                🦖
-            </div>
-
-            <div>
-
-                <div class="brand-name">
-                    DinoChat
-                </div>
-
-                <div class="brand-sub">
-                    Global social platform
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <nav id="navigation">
-
-            <button
-                class="nav active"
-                data-page="home"
-            >
-                🏠 Home
-            </button>
-
-            <button
-                class="nav"
-                data-page="chat"
-            >
-                💬 Dinosaur
-            </button>
-
-            <button
-                class="nav"
-                data-page="manga"
-            >
-                📚 Manga
-            </button>
-
-            <button
-                class="nav"
-                data-page="reels"
-            >
-                🎬 Reels & Snaps
-            </button>
-
-            <button
-                class="nav"
-                data-page="history"
-            >
-                🕘 History
-            </button>
-
-            <button
-                class="nav"
-                data-page="scores"
-            >
-                🏆 Dino Scores
-            </button>
-
-            <button
-                class="nav"
-                data-page="account"
-            >
-                👤 Account
-            </button>
-
-            <button
-                class="nav"
-                data-page="settings"
-            >
-                ⚙️ Settings
-            </button>
-
-
-            <button class="nav" data-page="friends">👥 Friends</button>
-            <button class="nav" data-page="achievements">🎖️ Achievements</button>
-            <button class="nav" data-page="bet">♟️ Bet</button>
-            <button class="nav" data-page="social">📸 Insta + Snap</button>
-
-        </nav>
-
-
-        <div class="profile-mini">
-
-            <div
-                class="avatar"
-                id="sideAvatar"
-            >
-                D
-            </div>
-
-            <strong id="sideName">
-                DinoUser
-            </strong>
-
-            <small id="sideDinoId">
-                DINO-000000
-            </small>
-
-        </div>
-
-    </aside>
-
-
-    <!-- MAIN -->
-
-    <main>
-
-
-        <!-- TOP BAR -->
-
-        <header class="topbar">
-
-            <div
-                style="
-                    display:flex;
-                    align-items:center;
-                "
-            >
-
-                <button
-                    class="mobile-menu"
-                    id="mobileMenu"
-                >
-                    ☰
-                </button>
-
-                <div>
-
-                    <h2
-                        class="top-title"
-                        id="pageTitle"
-                    >
-                        Home
-                    </h2>
-
-                    <p
-                        class="top-sub"
-                        id="pageSubtitle"
-                    >
-                        Welcome to DinoChat
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="online server-badge" id="serverBadge"><i></i><span>Server connecting…</span></div>
-
-        </header>
-
-
-        <!-- CONTENT -->
-
-        <div id="content">
-
-
-            <!-- =================================================
-                 HOME
-            ================================================== -->
-
-            <section
-                class="page active"
-                id="page-home"
-            >
-
-                <div class="hero">
-
-                    <div>
-
-                        <span class="badge">
-                            🌍 GLOBAL SOCIAL PLATFORM
-                        </span>
-
-                        <h1>
-                            Chat.
-                            Share.
-                            <br>
-
-                            <span>
-                                Be a Dino.
-                            </span>
-                        </h1>
-
-                        <p>
-                            Connect with people around the
-                            world through Dinosaur, discover
-                            manga, share snaps and climb the
-                            Dino rankings.
-                        </p>
-
-
-                        <div class="actions">
-
-                            <button
-                                class="btn primary"
-                                onclick="openPage('chat')"
-                            >
-                                Open Dinosaur Chat →
-                            </button>
-
-                            <button
-                                class="btn"
-                                onclick="openPage('account')"
-                            >
-                                My Account
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="hero-dino">
-
-                        <div class="dino-circle">
-                            🦖
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="section-title">
-
-                    <h2>
-                        Explore DinoChat
-                    </h2>
-
-                    <p>
-                        Your social world in one place.
-                    </p>
-
-                </div>
-
-
-                <div class="grid">
-
-
-                    <button
-                        class="card"
-                        onclick="openPage('chat')"
-                    >
-
-                        <div
-                            style="font-size:30px"
-                        >
-                            💬
-                        </div>
-
-                        <h3>
-                            Dinosaur
-                        </h3>
-
-                        <p>
-                            Global community chat.
-                        </p>
-
-                    </button>
-
-
-                    <button
-                        class="card"
-                        onclick="openPage('manga')"
-                    >
-
-                        <div
-                            style="font-size:30px"
-                        >
-                            📚
-                        </div>
-
-                        <h3>
-                            Manga
-                        </h3>
-
-                        <p>
-                            Discover your manga world.
-                        </p>
-
-                    </button>
-
-
-                    <button
-                        class="card"
-                        onclick="openPage('reels')"
-                    >
-
-                        <div
-                            style="font-size:30px"
-                        >
-                            🎬
-                        </div>
-
-                        <h3>
-                            Reels & Snaps
-                        </h3>
-
-                        <p>
-                            Share short content.
-                        </p>
-
-                    </button>
-
-
-                    <button
-                        class="card"
-                        onclick="openPage('scores')"
-                    >
-
-                        <div
-                            style="font-size:30px"
-                        >
-                            🏆
-                        </div>
-
-                        <h3>
-                            Dino Scores
-                        </h3>
-
-                        <p>
-                            Climb the rankings.
-                        </p>
-
-                    </button>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 DINOSAUR CHAT
-            ================================================== -->
-
-            <section
-                class="page"
-                id="page-chat"
-            >
-
-                <div class="chat-layout">
-
-
-                    <div class="chat-box">
-
-
-                        <div class="chat-header">
-
-                            <div>
-
-                                <strong>
-                                    🟢 Dinosaur
-                                </strong>
-
-                                <small>
-                                    Global community
-                                </small>
-
-                            </div>
-
-
-                            <div class="chat-actions">
-                                📞　📹　•••
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            class="messages"
-                            id="messages"
-                        ></div>
-
-
-                        <div class="composer">
-
-                            <textarea
-                                id="messageInput"
-                                rows="1"
-                                placeholder="Write a message..."
-                            ></textarea>
-
-                            <button
-                                class="send-button"
-                                id="sendButton"
-                            >
-                                ➤
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        class="card chat-side-card"
-                    >
-
-                        <div
-                            style="font-size:50px"
-                        >
-                            🦖
-                        </div>
-
-                        <h3>
-                            Dinosaur
-                        </h3>
-
-                        <p>
-                            Global DinoChat community.
-                        </p>
-
-                        <hr
-                            style="
-                                border:0;
-                                border-top:
-                                1px solid var(--border);
-                            "
-                        >
-
-                        <p>
-                            Be respectful.<br>
-                            No spam.<br>
-                            Keep DinoChat friendly.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 MANGA
-            ================================================== -->
-
-            <section
-                class="page"
-                id="page-manga"
-            >
-
-                <div class="page-head">
-
-                    <div>
-
-                        <span class="badge">
-                            📚 DISCOVER
-                        </span>
-
-                        <h1>
-                            Manga
-                        </h1>
-
-                        <p>
-                            Explore your manga world.
-                        </p>
-
-                    </div>
-
-                    <button
-                        class="btn primary"
-                        onclick="alert('Manga upload will be connected to the backend later.')"
-                    >
-                        ＋ Add Manga
-                    </button>
-
-                </div>
-
-
-                <div class="manga-grid">
-
-
-                    <article class="card item">
-
-                        <div class="media-cover">
-                            🌌
-                        </div>
-
-                        <div class="item-info">
-
-                            <h3>
-                                Cosmic Dino
-                            </h3>
-
-                            <p>
-                                Chapter 42
-                            </p>
-
-                            <button
-                                class="btn"
-                            >
-                                Read
-                            </button>
-
-                        </div>
-
-                    </article>
-
-
-                    <article class="card item">
-
-                        <div class="media-cover">
-                            ⚔️
-                        </div>
-
-                        <div class="item-info">
-
-                            <h3>
-                                Dino Warriors
-                            </h3>
-
-                            <p>
-                                Chapter 18
-                            </p>
-
-                            <button
-                                class="btn"
-                            >
-                                Read
-                            </button>
-
-                        </div>
-
-                    </article>
-
-
-                    <article class="card item">
-
-                        <div class="media-cover">
-                            🌸
-                        </div>
-
-                        <div class="item-info">
-
-                            <h3>
-                                Cherry Dino
-                            </h3>
-
-                            <p>
-                                Chapter 27
-                            </p>
-
-                            <button
-                                class="btn"
-                            >
-                                Read
-                            </button>
-
-                        </div>
-
-                    </article>
-
-
-                    <article class="card item">
-
-                        <div class="media-cover">
-                            🔥
-                        </div>
-
-                        <div class="item-info">
-
-                            <h3>
-                                Fire Rex
-                            </h3>
-
-                            <p>
-                                Chapter 63
-                            </p>
-
-                            <button
-                                class="btn"
-                            >
-                                Read
-                            </button>
-
-                        </div>
-
-                    </article>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 REELS
-            ================================================== -->
-
-            <section
-                class="page"
-                id="page-reels"
-            >
-
-                <div class="page-head">
-
-                    <div>
-
-                        <span class="badge">
-                            🎬 SHORT CONTENT
-                        </span>
-
-                        <h1>
-                            Reels & Snaps
-                        </h1>
-
-                        <p>
-                            Share moments with the community.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="feed-grid">
-
-
-                    <article class="card item">
-
-                        <div class="media-cover">
-                            🦖
-                        </div>
-
-                        <div class="item-info">
-
-                            <strong>
-                                DinoExplorer
-                            </strong>
-
-                            <p>
-                                Found the coolest
-                                dinosaur place!
-                            </p>
-
-                            <small>
-                                ❤️ 1.2K · 💬 84
-                            </small>
-
-                        </div>
-
-                    </article>
-
-
-                    <article class="card item">
-
-                        <div class="media-cover">
-                            🌴
-                        </div>
-
-                        <div class="item-info">
-
-                            <strong>
-                                MangaDino
-                            </strong>
-
-                            <p>
-                                New manga collection today 📚
-                            </p>
-
-                            <small>
-                                ❤️ 932 · 💬 52
-                            </small>
-
-                        </div>
-
-                    </article>
-
-
-                    <article class="card item">
-
-                        <div class="media-cover">
-                            🎮
-                        </div>
-
-                        <div class="item-info">
-
-                            <strong>
-                                GameDino
-                            </strong>
-
-                            <p>
-                                Gaming night with the squad.
-                            </p>
-
-                            <small>
-                                ❤️ 721 · 💬 31
-                            </small>
-
-                        </div>
-
-                    </article>
-
-
-                    <article class="card item">
-
-                        <div class="media-cover">
-                            😂
-                        </div>
-
-                        <div class="item-info">
-
-                            <strong>
-                                RexMemes
-                            </strong>
-
-                            <p>
-                                Dino meme of the day.
-                            </p>
-
-                            <small>
-                                ❤️ 2.4K · 💬 118
-                            </small>
-
-                        </div>
-
-                    </article>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 HISTORY
-            ================================================== -->
-
-            <section
-                class="page"
-                id="page-history"
-            >
-
-                <div class="page-head">
-
-                    <div>
-
-                        <span class="badge">
-                            🕘 ACTIVITY
-                        </span>
-
-                        <h1>
-                            History
-                        </h1>
-
-                        <p>
-                            Your recent activity.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div id="historyList"></div>
-
-            </section>
-
-
-            <!-- =================================================
-                 DINO SCORES
-            ================================================== -->
-
-            <section
-                class="page"
-                id="page-scores"
-            >
-
-                <div class="page-head">
-
-                    <div>
-
-                        <span class="badge">
-                            🏆 RANKING
-                        </span>
-
-                        <h1>
-                            Dino Scores
-                        </h1>
-
-                        <p>
-                            Build your Dino reputation.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card score-card">
-
-                    <div
-                        style="
-                            font-size:55px;
-                        "
-                    >
-                        🦖
-                    </div>
-
-                    <div>
-
-                        <small>
-                            Your Dino Score
-                        </small>
-
-                        <div
-                            class="score-number"
-                            id="scoreNumber"
-                        >
-                            100
-                        </div>
-
-                    </div>
-
-
-                    <div class="coins">
-                        🪙
-                        <b id="coinNumber">
-                            100
-                        </b>
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="card"
-                    style="margin-top:15px"
-                >
-
-                    <div class="row">
-
-                        <span>
-                            🥇
-                            <b>DinoKing</b>
-                        </span>
-
-                        <b>9842</b>
-
-                    </div>
-
-
-                    <div class="row">
-
-                        <span>
-                            🥈
-                            <b>RexMaster</b>
-                        </span>
-
-                        <b>8421</b>
-
-                    </div>
-
-
-                    <div class="row">
-
-                        <span>
-                            🥉
-                            <b>MangaRex</b>
-                        </span>
-
-                        <b>7936</b>
-
-                    </div>
-
-
-                    <div class="row">
-
-                        <span>
-                            🦖
-                            <b id="scoreName">
-                                DinoUser
-                            </b>
-                        </span>
-
-                        <b id="scoreRowNumber">
-                            100
-                        </b>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 ACCOUNT
-            ================================================== -->
-
-            <section
-                class="page"
-                id="page-account"
-            >
-
-                <div class="page-head">
-
-                    <div>
-
-                        <span class="badge">
-                            👤 PROFILE
-                        </span>
-
-                        <h1>
-                            Account
-                        </h1>
-
-                        <p>
-                            Manage your Dino identity.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="card account-card"
-                >
-
-                    <div
-                        class="dino-circle"
-                        style="
-                            width:90px;
-                            height:90px;
-                            font-size:45px;
-                            margin-bottom:20px;
-                        "
-                    >
-                        🦖
-                    </div>
-
-
-                    <label class="input-label">
-                        Username
-                    </label>
-
-                    <input
-                        class="input"
-                        id="usernameInput"
-                        maxlength="24"
-                        placeholder="Enter username"
-                    >
-
-
-                    <label class="input-label">
-                        Dino ID
-                    </label>
-
-                    <input
-                        class="input"
-                        id="dinoIdInput" readonly class="input locked" title="Permanent Dino ID — cannot be changed"
-                        readonly
-                    >
-
-                    <div class="readonly-note">
-                        🔒 Your Dino ID is permanent and cannot
-                        be changed.
-                    </div>
-
-
-                    <button
-                        class="btn primary"
-                        onclick="saveAccount()"
-                    >
-                        Save Changes
-                    </button>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 FRIENDS
-            ================================================== -->
-            <section class="page" id="page-friends">
-              <div class="page-head"><div><span class="badge">👥 CONNECTIONS</span><h1>Friends</h1><p>Find people by permanent Dino ID. Friends do not create private chat automatically.</p></div></div>
-              <div class="card">
-                <label class="input-label">Send friend request by Dino ID</label>
-                <div style="display:flex;gap:8px"><input class="input" id="friendDinoId" placeholder="DINO-XXXXXXXX"><button class="btn primary" id="sendFriendBtn">Send</button></div>
-              </div>
-              <div class="friend-grid" style="margin-top:14px">
-                <div class="card"><h3>Incoming requests</h3><div id="incomingFriends"></div></div>
-                <div class="card"><h3>Your friends</h3><div id="friendList"></div></div>
-              </div>
-            </section>
-
-            <!-- =================================================
-                 ACHIEVEMENTS
-            ================================================== -->
-            <section class="page" id="page-achievements">
-              <div class="page-head"><div><span class="badge">🎖️ DINO BADGES</span><h1>Achievements</h1><p>Milestones attached to your permanent Dino ID.</p></div></div>
-              <div class="feature-grid" id="achievementGrid"></div>
-            </section>
-
-            <!-- =================================================
-                 BET
-            ================================================== -->
-            <section class="page" id="page-bet">
-              <div class="page-head"><div><span class="badge">♟️ DINO CHESS</span><h1>Bet</h1><p>Virtual Dino Score stakes only — no real money.</p></div></div>
-              <div class="grid">
-                <div class="card"><h3>Create chess bet</h3><label class="input-label">Opponent Dino ID</label><input class="input" id="betOpponent" placeholder="DINO-XXXXXXXX"><label class="input-label">Stake</label><input class="input" id="betStake" type="number" min="0.1" step="0.1" value="0.1"><button class="btn primary" style="margin-top:12px" id="createBetBtn">Create Bet</button></div>
-                <div class="card"><h3>Open bets</h3><div id="betList"></div></div>
-                <div class="card"><h3>Your balance</h3><div class="score-number" id="betBalance">0</div><p>Bet results are handled by the server. A losing result may make the virtual balance negative as requested.</p></div>
-              </div>
-            </section>
-
-            <!-- =================================================
-                 SOCIAL CORNER
-            ================================================== -->
-            <section class="page" id="page-social">
-              <div class="page-head"><div><span class="badge">📸 SOCIAL CORNER</span><h1>Insta + Snap</h1><p>Submit verified Instagram or Snapchat links and track unique Dino views.</p></div></div>
-              <div class="card">
-                <div class="social-form">
-                  <select class="input" id="socialType"><option value="instagram">Instagram</option><option value="snap">Snapchat</option></select>
-                  <input class="input" id="socialUrl" placeholder="https://www.instagram.com/... or https://www.snapchat.com/...">
-                  <button class="btn primary" id="submitSocialBtn">Submit</button>
-                </div>
-                <div class="auth-error" id="socialError"></div>
-              </div>
-              <div class="social-list" id="socialList"></div>
-            </section>
-
-            <!-- =================================================
-                 SETTINGS
-            ================================================== -->
-
-            <section
-                class="page"
-                id="page-settings"
-            >
-
-                <div class="page-head">
-
-                    <div>
-
-                        <span class="badge">
-                            ⚙️ CUSTOMIZE
-                        </span>
-
-                        <h1>
-                            Settings
-                        </h1>
-
-                        <p>
-                            Choose a light UI with its own
-                            pattern and design.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card">
-
-                    <h2>
-                        🎨 UI Themes
-                    </h2>
-
-                    <p>
-                        10 light color combinations with
-                        different patterns.
-                    </p>
-
-
-                    <div
-                        class="theme-grid"
-                        id="themeGrid"
-                    ></div>
-
-                </div>
-
-
-                <div
-                    class="card"
-                    style="margin-top:15px"
-                >
-
-                    <div class="setting-row">
-
-                        <div>
-
-                            <span class="setting-title">
-                                🔔 Notifications
-                            </span>
-
-                            <span class="setting-description">
-                                Receive notifications
-                            </span>
-
-                        </div>
-
-                        <input
-                            type="checkbox"
-                            checked
-                        >
-
-                    </div>
-
-
-                    <div class="setting-row">
-
-                        <div>
-
-                            <span class="setting-title">
-                                💬 Enter to send
-                            </span>
-
-                            <span class="setting-description">
-                                Press Enter to send messages
-                            </span>
-
-                        </div>
-
-                        <input
-                            type="checkbox"
-                            checked
-                            id="enterToSend"
-                        >
-
-                    </div>
-
-
-                    <div class="setting-row">
-
-                        <div>
-
-                            <span class="setting-title">
-                                🌐 Online status
-                            </span>
-
-                            <span class="setting-description">
-                                Show online status
-                            </span>
-
-                        </div>
-
-                        <input
-                            type="checkbox"
-                            checked
-                        >
-
-                    </div>
-
-                </div>
-
-            </section>
-
-        </div>
-
-    </main>
-
-</div>
-
-
-
-<!-- DinoChat Global Server -->
-
-
-
-
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
 <script>
 (() => {
+
   const API = "https://dinocaht.onrender.com";
+
   const TOKEN_KEY = "dinochat_token";
   const USER_KEY = "dinochat_user";
+  const GUEST_KEY = "dinochat_guest";
+
   let token = localStorage.getItem(TOKEN_KEY) || "";
+  let isGuest = localStorage.getItem(GUEST_KEY) === "true";
+
   let socket = null;
   let user = null;
   let messages = [];
   let currentRankings = [];
+
   const layouts = [
-    ["classic","Classic"],["compact","Compact"],["chatFirst","Chat First"],["profileFirst","Profile First"],["mobileBar","Mobile Bar"],
-    ["wideChat","Wide Chat"],["actionFocus","Action Focus"],["minimal","Minimal"],["split","Split Grid"],["dashboard","Dashboard"]
+    ["classic","Classic"],
+    ["compact","Compact"],
+    ["chatFirst","Chat First"],
+    ["profileFirst","Profile First"],
+    ["mobileBar","Mobile Bar"],
+    ["wideChat","Wide Chat"],
+    ["actionFocus","Action Focus"],
+    ["minimal","Minimal"],
+    ["split","Split Grid"],
+    ["dashboard","Dashboard"]
   ];
 
   const $ = id => document.getElementById(id);
-  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-  const toast = msg => { const e=$("toast"); e.textContent=msg; e.classList.add("show"); clearTimeout(window.__toast); window.__toast=setTimeout(()=>e.classList.remove("show"),2600); };
-  const api = async (path, options={}) => {
-    const headers={"Content-Type":"application/json",...(options.headers||{})};
-    if(token) headers.Authorization=`Bearer ${token}`;
-    const res=await fetch(API+path,{...options,headers});
-    let data={}; try{data=await res.json();}catch{}
-    if(!res.ok) throw new Error(data.error||data.message||`Request failed (${res.status})`);
+
+  const esc = v =>
+    String(v ?? "").replace(
+      /[&<>"']/g,
+      c => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+      }[c])
+    );
+
+  const toast = msg => {
+    const e = $("toast");
+    if (!e) return;
+
+    e.textContent = msg;
+    e.classList.add("show");
+
+    clearTimeout(window.__toast);
+
+    window.__toast = setTimeout(() => {
+      e.classList.remove("show");
+    }, 2800);
+  };
+
+  const api = async (path, options = {}) => {
+
+    const headers = {
+      "Content-Type":"application/json",
+      ...(options.headers || {})
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(API + path, {
+      ...options,
+      headers
+    });
+
+    let data = {};
+
+    try {
+      data = await res.json();
+    } catch {}
+
+    if (!res.ok) {
+      throw new Error(
+        data.error ||
+        data.message ||
+        `Request failed (${res.status})`
+      );
+    }
+
     return data;
   };
-  const setServer=(online,text)=>{const e=$("serverBadge"); if(!e)return; e.classList.toggle("online",!!online); e.querySelector("span").textContent=text;};
-  const showAuth=show=>{ $("authScreen").style.display=show?"grid":"none"; $("app").style.display=show?"none":"block"; };
-  const authError=msg=>$("authError").textContent=msg||"";
 
-  function switchAuth(which){
-    const reg=which==="register"; $("registerTab").classList.toggle("active",reg); $("loginTab").classList.toggle("active",!reg); $("registerPanel").classList.toggle("active",reg); $("loginPanel").classList.toggle("active",!reg); authError("");
-  }
-  $("registerTab").onclick=()=>switchAuth("register"); $("loginTab").onclick=()=>switchAuth("login");
+  const setServer = (online, text) => {
 
-  async function register(){
-    const username=$("registerUsername").value.trim(); if(username.length<2)return authError("Username must contain at least 2 characters.");
-    authError(""); $("registerBtn").disabled=true; $("registerBtn").textContent="Creating…";
-    try{const d=await api("/api/register",{method:"POST",body:JSON.stringify({username})}); await finishLogin(d);}catch(e){authError(e.message)}finally{$("registerBtn").disabled=false;$ ("registerBtn").textContent="Create permanent Dino ID";}
-  }
-  async function login(){
-    const dinoId=$("loginDinoId").value.trim().toUpperCase(); if(!dinoId)return authError("Enter your permanent Dino ID.");
-    authError(""); $("loginBtn").disabled=true; $("loginBtn").textContent="Signing in…";
-    try{const d=await api("/api/login",{method:"POST",body:JSON.stringify({dinoId})}); await finishLogin(d);}catch(e){authError(e.message)}finally{$("loginBtn").disabled=false;$ ("loginBtn").textContent="Sign in";}
-  }
-  $("registerBtn").onclick=register; $("loginBtn").onclick=login;
+    const e = $("serverBadge");
 
-  async function finishLogin(data){
-    token=data.token||data.accessToken||token; if(!token)throw new Error("Server did not return a login token.");
-    localStorage.setItem(TOKEN_KEY,token); if(data.user)localStorage.setItem(USER_KEY,JSON.stringify(data.user));
-    await bootstrap(); showAuth(false); toast(`Welcome, ${user.username}!`);
-  }
+    if (!e) return;
 
-  async function bootstrap(){
-    setServer(false,"Connecting…");
-    const [account]=await Promise.all([api("/api/account"),health()]);
-    user=account.user||account; localStorage.setItem(USER_KEY,JSON.stringify(user));
-    updateProfile();
-    await Promise.all([loadMessages(),loadRankings(),loadAchievements(),loadFriends(),loadSocial(),loadBets(),loadLayout()]);
-    connectSocket();
-    applyTheme(); renderThemes(); renderScores(); renderAccount(); renderLayoutButtons();
-    setServer(true,"DinoChat server online");
-  }
-  async function health(){try{const r=await fetch(API+"/api/health"); if(!r.ok)throw 0; setServer(true,"DinoChat server online"); return r.json();}catch{setServer(false,"Server unavailable");return null}}
+    e.classList.toggle("online", !!online);
 
-  function updateProfile(){
-    $("sideName").textContent=user?.username||"DinoUser"; $("sideDinoId").textContent=user?.dino_id||user?.dinoId||"DINO-…"; $("sideAvatar").textContent=(user?.username||"D").charAt(0).toUpperCase();
-    if($("scoreName"))$("scoreName").textContent=user?.username||"Dino";
-  }
-  function renderAccount(){if(!user)return; $("usernameInput").value=user.username||""; $("dinoIdInput").value=user.dino_id||user.dinoId||""; $("betBalance").textContent=Number(user.dino_score??0).toFixed(2);}
+    const span = e.querySelector("span");
 
-  async function saveAccount(){
-    const username=$("usernameInput").value.trim(); if(!username)return toast("Enter a username.");
-    try{const d=await api("/api/account/username",{method:"PUT",body:JSON.stringify({username})}); user=d.user||d; localStorage.setItem(USER_KEY,JSON.stringify(user)); updateProfile(); toast("Username updated.");}catch(e){toast(e.message)}
-  }
-  window.saveAccount=saveAccount;
-
-  async function loadMessages(){
-    try{const d=await api("/api/messages"); messages=(d.messages||d||[]).map(normalizeMessage); renderMessages();}catch(e){toast(e.message)}
-  }
-  function normalizeMessage(m){return {...m,id:m.id,dinoId:m.dinoId||m.dino_id,username:m.username||"Dino",text:m.text||m.content||"",time:m.time||new Date(m.created_at||Date.now()).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})};}
-  function renderMessages(){
-    const c=$("messages"); if(!c)return; if(!messages.length){c.innerHTML='<div class="empty-chat"><div class="empty-chat-icon">🦖</div><h3>Welcome to Dinosaur</h3><p>Start the global conversation.</p></div>';return;}
-    c.innerHTML=messages.map(m=>{const mine=m.dinoId===(user?.dino_id||user?.dinoId);return `<div class="message ${mine?"mine":""}"><div class="avatar">🦖</div><div class="bubble"><div><span class="message-name">${esc(m.username)}</span><span class="message-time">${esc(m.time)}</span></div><p class="message-text">${esc(m.text)}</p>${mine?`<div class="message-controls"><button onclick="editServerMessage('${esc(m.id)}')">Edit</button><button onclick="deleteServerMessage('${esc(m.id)}')">Delete</button></div>`:""}</div></div>`}).join(""); c.scrollTop=c.scrollHeight;
-  }
-  async function sendMessage(){
-    const input=$("messageInput"), text=input.value.trim(); if(!text||!token)return;
-    if(socket?.connected){socket.emit("send-message",{text});input.value="";return;}
-    try{const d=await api("/api/messages",{method:"POST",body:JSON.stringify({content:text,text})}); messages.push(normalizeMessage(d.message||d)); input.value=""; renderMessages();}catch(e){toast(e.message)}
-  }
-  window.editServerMessage=async id=>{const m=messages.find(x=>x.id===id);if(!m)return;const text=prompt("Edit message:",m.text);if(!text?.trim())return;try{const d=await api(`/api/messages/${encodeURIComponent(id)}`,{method:"PUT",body:JSON.stringify({content:text.trim(),text:text.trim()})});const nm=normalizeMessage(d.message||d);messages=messages.map(x=>x.id===id?nm:x);renderMessages();}catch(e){toast(e.message)}};
-  window.deleteServerMessage=async id=>{if(!confirm("Delete this message?"))return;try{await api(`/api/messages/${encodeURIComponent(id)}`,{method:"DELETE"});messages=messages.filter(x=>x.id!==id);renderMessages();}catch(e){toast(e.message)}};
-  $("sendButton").onclick=sendMessage; $("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&$("enterToSend")?.checked){e.preventDefault();sendMessage();}});
-
-  function connectSocket(){
-    if(socket)socket.disconnect(); socket=io(API,{transports:["websocket","polling"],auth:{token}});
-    socket.on("connect",()=>{socket.emit("join-dinosaur",{token});setServer(true,"DinoChat server online")});
-    socket.on("new-message",m=>{const nm=normalizeMessage(m);if(!messages.some(x=>x.id===nm.id)){messages.push(nm);messages=messages.slice(-200);renderMessages();}});
-    socket.on("message-deleted",id=>{messages=messages.filter(x=>x.id!==id);renderMessages()});
-    socket.on("connect_error",()=>setServer(false,"Server connection error")); socket.on("disconnect",()=>setServer(false,"Server disconnected"));
-  }
-
-  async function loadRankings(){try{const d=await api("/api/scores");currentRankings=d.rankings||d.users||d||[];renderScores();}catch(e){toast(e.message)}}
-  function renderScores(){
-    const score=Number(user?.dino_score??user?.dinoScore??0); if($("scoreNumber"))$("scoreNumber").textContent=score.toFixed(2);if($("scoreRowNumber"))$("scoreRowNumber").textContent=score.toFixed(2);if($("coinNumber"))$("coinNumber").textContent=score.toFixed(2);if($("betBalance"))$("betBalance").textContent=score.toFixed(2);
-    const rankCard=$("liveRanking");if(rankCard)rankCard.innerHTML=(currentRankings||[]).slice(0,100).map((r,i)=>{const d=r.dino_id||r.dinoId;return `<tr class="${d===(user?.dino_id||user?.dinoId)?"rank-me":""}"><td>${r.rank||i+1}</td><td><b>${esc(r.username||"Dino")}</b><div class="online-mini">${esc(d||"")}</div></td><td>${Number(r.dino_score??r.score??0).toFixed(2)}</td></tr>`}).join("")||'<tr><td colspan="3">No rankings yet.</td></tr>';
-  }
-
-  async function loadAchievements(){try{const d=await api("/api/achievements");const a=d.achievements||d||[];$("achievementGrid").innerHTML=a.map(x=>`<div class="feature-card"><div style="font-size:34px">${esc(x.icon||"🏅")}</div><h3>${esc(x.name||x.code)}</h3><p>${esc(x.description||"")}</p><span class="pill">${x.achieved_at?"Unlocked":"Locked"}</span></div>`).join("")||'<div class="card">No achievements yet.</div>'}catch(e){toast(e.message)}}
-
-  async function loadFriends(){try{const d=await api("/api/friends");const incoming=d.incoming||d.requests||[];const friends=d.friends||[];$("incomingFriends").innerHTML=incoming.map(x=>`<div class="request"><span><b>${esc(x.username||x.sender_username||"Dino")}</b><br><small>${esc(x.dino_id||x.sender_dino_id||"")}</small></span><button class="btn" onclick="acceptFriend('${esc(x.id)}')">Accept</button></div>`).join("")||'<p class="online-mini">No pending requests.</p>';$("friendList").innerHTML=friends.map(x=>`<div class="request"><span><b>${esc(x.username||"Dino")}</b><br><small>${esc(x.dino_id||x.dinoId||"")}</small></span><span class="pill">Friend</span></div>`).join("")||'<p class="online-mini">No friends yet.</p>'}catch(e){toast(e.message)}}
-  $("sendFriendBtn").onclick=async()=>{const dinoId=$("friendDinoId").value.trim();if(!dinoId)return;try{await api("/api/friends/request",{method:"POST",body:JSON.stringify({dinoId})});$("friendDinoId").value="";toast("Friend request sent.");}catch(e){toast(e.message)}};
-  window.acceptFriend=async id=>{try{await api(`/api/friends/${encodeURIComponent(id)}/accept`,{method:"POST"});await loadFriends();toast("Friend request accepted.");}catch(e){toast(e.message)}};
-
-  function validSocialUrl(type,url){try{const u=new URL(url);const h=u.hostname.toLowerCase().replace(/^www\./,"");if(type==="instagram")return h==="instagram.com"||h.endsWith(".instagram.com");return h==="snapchat.com"||h.endsWith(".snapchat.com")}catch{return false}}
-  async function loadSocial(){try{const d=await api("/api/social");const list=d.content||d.social||d||[];$("socialList").innerHTML=list.map(x=>`<div class="social-item"><div><b>${x.content_type==="instagram"?"📸 Instagram":"👻 Snapchat"}</b><br><small>${esc(x.url)}</small><br><span class="pill">👀 ${Number(x.unique_views??x.uniqueViews??0)} Dino views</span></div><button class="btn" onclick="openSocial('${esc(x.id)}','${esc(x.url)}')">Open</button></div>`).join("")||'<div class="card">No social links submitted yet.</div>'}catch(e){toast(e.message)}}
-  window.openSocial=async(id,url)=>{try{await api(`/api/social/${encodeURIComponent(id)}/view`,{method:"POST"})}catch{} window.open(url,"_blank","noopener,noreferrer");loadSocial()};
-  $("submitSocialBtn").onclick=async()=>{const type=$("socialType").value,url=$("socialUrl").value.trim();$("socialError").textContent="";if(!validSocialUrl(type,url)){return $("socialError").textContent="That URL is not a valid Instagram/Snapchat domain for the selected type."}try{await api("/api/social",{method:"POST",body:JSON.stringify({type,contentType:type,url})});$("socialUrl").value="";toast("Social link submitted.");loadSocial()}catch(e){$("socialError").textContent=e.message}};
-
-  async function loadBets(){try{const d=await api("/api/bets");const bets=d.bets||d||[];$("betList").innerHTML=bets.map(b=>`<div class="request"><span><b>${esc(b.creator_dino_id||b.creatorDinoId||"")}</b> vs <b>${esc(b.opponent_dino_id||b.opponentDinoId||"Open")}</b><br><small>Stake ${Number(b.stake||0).toFixed(2)} · ${esc(b.status||"")}</small></span>${b.status==="waiting"&&String(b.opponent_id||b.opponentId)===(user?.id||"")?`<button class="btn" onclick="acceptBet('${esc(b.id)}')">Accept</button>`:""}</div>`).join("")||'<p class="online-mini">No bets.</p>'}catch(e){toast(e.message)}}
-  $("createBetBtn").onclick=async()=>{const opponentDinoId=$("betOpponent").value.trim(),stake=Number($("betStake").value);if(!opponentDinoId||!(stake>0))return toast("Enter opponent and stake.");try{await api("/api/bets",{method:"POST",body:JSON.stringify({opponentDinoId,stake,game:"chess"})});toast("Chess bet created.");loadBets()}catch(e){toast(e.message)}};
-  window.acceptBet=async id=>{try{await api(`/api/bets/${encodeURIComponent(id)}/accept`,{method:"POST"});toast("Bet accepted.");loadBets()}catch(e){toast(e.message)}};
-
-  const themes={
-    mint:{name:"Mint",bg:"#effaf3",primary:"#18864b",soft:"#dcf4e5",pattern:"linear-gradient(#18864b0c 1px,transparent 1px),linear-gradient(90deg,#18864b0c 1px,transparent 1px)"},
-    peach:{name:"Peach",bg:"#fff7f1",primary:"#d56b3d",soft:"#ffe8d9",pattern:"radial-gradient(circle at 20px 20px,#d56b3d12 0 12px,transparent 13px)"},
-    lavender:{name:"Lavender",bg:"#f8f5ff",primary:"#7658b8",soft:"#ece5ff",pattern:"linear-gradient(45deg,#7658b80c 25%,transparent 25%,transparent 75%,#7658b80c 75%)"},
-    sky:{name:"Sky",bg:"#f2faff",primary:"#277bb5",soft:"#dff1ff",pattern:"linear-gradient(135deg,#277bb50d 25%,transparent 25%,transparent 75%,#277bb50d 75%)"},
-    lemon:{name:"Lemon",bg:"#fffdf0",primary:"#9b8618",soft:"#fff5b8",pattern:"radial-gradient(circle,#9b86180d 2px,transparent 3px) 0 0/18px 18px"},
-    rose:{name:"Rose",bg:"#fff5f7",primary:"#bd536f",soft:"#ffe0e8",pattern:"linear-gradient(30deg,#bd536f0c 12%,transparent 12.5%,transparent 87%,#bd536f0c 87.5%) 0 0/22px 22px"},
-    sage:{name:"Sage",bg:"#f5f8f1",primary:"#658653",soft:"#e4eedc",pattern:"linear-gradient(#6586530c 1px,transparent 1px),linear-gradient(90deg,#6586530c 1px,transparent 1px)"},
-    periwinkle:{name:"Periwinkle",bg:"#f5f7ff",primary:"#5c75c7",soft:"#e5ebff",pattern:"linear-gradient(45deg,#5c75c70c 25%,transparent 25%,transparent 75%,#5c75c70c 75%)"},
-    ice:{name:"Ice Glass",bg:"#f4fbff",primary:"#3b8bbd",soft:"#e3f4ff",pattern:"radial-gradient(circle at 20px 20px,#3b8bbd10 0 14px,transparent 15px)"},
-    sand:{name:"Sand",bg:"#fbf8ef",primary:"#9a7440",soft:"#efe2c8",pattern:"linear-gradient(135deg,#9a74400b 25%,transparent 25%,transparent 50%,#9a74400b 50%,#9a74400b 75%,transparent 75%) 0 0/24px 24px"},
-    darkGold:{name:"Dark Gold",bg:"#15120a",primary:"#e2b84a",soft:"#3b3015",pattern:"linear-gradient(#e2b84a10 1px,transparent 1px),linear-gradient(90deg,#e2b84a10 1px,transparent 1px)"},
-    darkBlue:{name:"Dark Blue",bg:"#08111f",primary:"#4f9cff",soft:"#132a45",pattern:"radial-gradient(circle at 20px 20px,#4f9cff10 0 12px,transparent 13px)"}
+    if (span) {
+      span.textContent = text;
+    }
   };
-  function applyTheme(){const name=localStorage.getItem("dino_theme")||"mint",t=themes[name]||themes.mint;document.documentElement.style.setProperty("--bg",t.bg);document.documentElement.style.setProperty("--primary",t.primary);document.documentElement.style.setProperty("--primary-dark",t.primary);document.documentElement.style.setProperty("--soft",t.soft);document.documentElement.style.setProperty("--pattern",t.pattern);document.documentElement.style.setProperty("--text",name.startsWith("dark")?"#f5f7fb":"#173526");document.documentElement.style.setProperty("--muted",name.startsWith("dark")?"#aeb9c8":"#688073");document.documentElement.style.setProperty("--card",name.startsWith("dark")?"#111a27":"#ffffff");document.documentElement.style.setProperty("--card2",name.startsWith("dark")?"#0d1622":"#f7fdf9");document.documentElement.style.setProperty("--border",name.startsWith("dark")?"#26384d":"#cde6d6");}
-  function renderThemes(){const c=$("themeGrid");if(!c)return;c.innerHTML=Object.entries(themes).map(([k,t])=>`<button class="theme-button ${k===(localStorage.getItem("dino_theme")||"mint")?"selected":""}" onclick="setTheme('${k}')"><div class="theme-preview" style="background:${t.bg};background-image:${t.pattern}"></div><strong>${esc(t.name)}</strong><small>${k.startsWith("dark")?"Dark UI":"Light UI"}</small></button>`).join("")}
-  window.setTheme=k=>{if(!themes[k])return;localStorage.setItem("dino_theme",k);applyTheme();renderThemes()};
 
-  async function loadLayout(){try{const d=await api("/api/layout");const n=d.layout_name||d.layoutName||"classic";applyLayout(n)}catch{applyLayout(localStorage.getItem("dino_layout")||"classic")}}
-  function applyLayout(name){document.body.className=[...document.body.classList].filter(x=>!x.startsWith("layout-")).join(" ");document.body.classList.add("layout-"+name);localStorage.setItem("dino_layout",name);renderLayoutButtons()}
-  function renderLayoutButtons(){const c=$("layoutGrid");if(!c)return;const active=localStorage.getItem("dino_layout")||"classic";c.innerHTML=layouts.map(([k,n])=>`<button class="layout-btn ${k===active?"selected":""}" onclick="chooseLayout('${k}')"><b>${esc(n)}</b><br><small>Position preset</small></button>`).join("")}
-  window.chooseLayout=async name=>{applyLayout(name);try{await api("/api/layout",{method:"PUT",body:JSON.stringify({layoutName:name,layout_name:name,layoutData:{}})});toast("Layout saved.")}catch(e){toast(e.message)}};
+  const showAuth = show => {
 
-  function openPage(page){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));const target=$("page-"+page);if(!target)return;target.classList.add("active");document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===page));const names={home:"Home",chat:"Dinosaur",manga:"Manga",reels:"Reels & Snaps",history:"History",scores:"Dino Scores",account:"Account",settings:"Settings",friends:"Friends",achievements:"Achievements",bet:"Bet",social:"Insta + Snap"};$("pageTitle").textContent=names[page]||"DinoChat";$("pageSubtitle").textContent=page==="chat"?"Global community chat":"DinoChat";$("sidebar").classList.remove("open");if(page==="chat")renderMessages();if(page==="scores")loadRankings();if(page==="achievements")loadAchievements();if(page==="friends")loadFriends();if(page==="social")loadSocial();if(page==="bet")loadBets();if(page==="settings"){renderThemes();renderLayoutButtons()}if(page==="account")renderAccount();}
-  document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>openPage(b.dataset.page)); $("mobileMenu").onclick=()=>$("sidebar").classList.toggle("open");
+    $("authScreen").style.display =
+      show ? "grid" : "none";
 
-  $("logoutBtn").onclick=async()=>{try{await api("/api/auth/logout",{method:"POST"})}catch{} token="";localStorage.removeItem(TOKEN_KEY);socket?.disconnect();showAuth(true);switchAuth("login");toast("Logged out.")};
+    $("app").style.display =
+      show ? "none" : "block";
+  };
 
-  // Add live ranking table to scores page without destroying the original card.
-  const scorePage=$("page-scores"); if(scorePage&&!$("liveRanking")){const box=document.createElement("div");box.className="card";box.style.marginTop="16px";box.innerHTML='<h3>🌎 Live Global Dino Ranking</h3><div style="overflow:auto"><table class="table"><thead><tr><th>#</th><th>Dino</th><th>Score</th></tr></thead><tbody id="liveRanking"></tbody></table></div>';scorePage.appendChild(box)}
+  const authError = msg => {
 
-  // Startup: validate existing token. If invalid, show auth instead of the old local-only UI.
-  (async()=>{applyTheme();renderThemes();renderLayoutButtons();$("authStatus").textContent="Checking DinoChat server…";try{if(token){await bootstrap();showAuth(false)}else{await health();showAuth(true)}}catch(e){token="";localStorage.removeItem(TOKEN_KEY);showAuth(true);authError("Please sign in or create a Dino account.");$("authStatus").textContent="Server is ready."}finally{setTimeout(()=>{const i=$("intro");if(i){i.style.opacity="0";setTimeout(()=>i.remove(),500)}},300)}})();
+    if ($("authError")) {
+      $("authError").textContent = msg || "";
+    }
+  };
+
+  /* =========================================================
+     AUTH TABS
+  ========================================================= */
+
+  function switchAuth(which) {
+
+    const reg = which === "register";
+
+    $("registerTab").classList.toggle(
+      "active",
+      reg
+    );
+
+    $("loginTab").classList.toggle(
+      "active",
+      !reg
+    );
+
+    $("registerPanel").classList.toggle(
+      "active",
+      reg
+    );
+
+    $("loginPanel").classList.toggle(
+      "active",
+      !reg
+    );
+
+    authError("");
+  }
+
+  $("registerTab").onclick = () =>
+    switchAuth("register");
+
+  $("loginTab").onclick = () =>
+    switchAuth("login");
+
+
+  /* =========================================================
+     GUEST MODE
+  ========================================================= */
+
+  function enterGuestMode() {
+
+    isGuest = true;
+
+    token = "";
+
+    localStorage.setItem(
+      GUEST_KEY,
+      "true"
+    );
+
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+
+    user = {
+      username:"Guest User",
+      dino_id:null,
+      dinoId:null,
+      dino_score:0,
+      dinoScore:0,
+      is_guest:true
+    };
+
+    showAuth(false);
+
+    setServer(
+      true,
+      "Guest Mode"
+    );
+
+    updateProfile();
+    renderGuestProfile();
+    renderScores();
+    renderAccount();
+
+    openPage("home");
+
+    toast("Welcome, Guest User!");
+  }
+
+
+  function exitGuestMode() {
+
+    isGuest = false;
+
+    localStorage.removeItem(
+      GUEST_KEY
+    );
+
+    token = "";
+
+    user = null;
+
+    if (socket) {
+      socket.disconnect();
+      socket = null;
+    }
+
+    showAuth(true);
+
+    switchAuth("login");
+
+    authError("");
+
+    $("authStatus").textContent =
+      "Create or sign in with your Dino ID.";
+
+    toast("Guest mode closed.");
+  }
+
+
+  function requireDinoId() {
+
+    if (!isGuest) {
+      return true;
+    }
+
+    toast(
+      "🔒 You need a Dino ID to use this feature."
+    );
+
+    return false;
+  }
+
+
+  function openDinoLogin() {
+
+    isGuest = false;
+
+    localStorage.removeItem(
+      GUEST_KEY
+    );
+
+    user = null;
+
+    showAuth(true);
+
+    switchAuth("register");
+
+    $("authStatus").textContent =
+      "Create your permanent Dino ID to unlock Dino Score.";
+  }
+
+
+  function renderGuestProfile() {
+
+    if (!isGuest) return;
+
+    if ($("sideName"))
+      $("sideName").textContent =
+        "Guest User";
+
+    if ($("sideDinoId"))
+      $("sideDinoId").textContent =
+        "Guest";
+
+    if ($("sideAvatar"))
+      $("sideAvatar").textContent =
+        "G";
+
+    if ($("scoreName"))
+      $("scoreName").textContent =
+        "Guest User";
+
+    if ($("usernameInput"))
+      $("usernameInput").value =
+        "Guest User";
+
+    if ($("dinoIdInput"))
+      $("dinoIdInput").value =
+        "No Dino ID";
+
+    if ($("scoreNumber"))
+      $("scoreNumber").textContent =
+        "—";
+
+    if ($("scoreRowNumber"))
+      $("scoreRowNumber").textContent =
+        "—";
+
+    if ($("coinNumber"))
+      $("coinNumber").textContent =
+        "—";
+
+    if ($("betBalance"))
+      $("betBalance").textContent =
+        "—";
+  }
+
+
+  /* =========================================================
+     GUEST BUTTON
+  ========================================================= */
+
+  const guestBtn = $("guestBtn");
+
+  if (guestBtn) {
+    guestBtn.onclick =
+      enterGuestMode;
+  } else {
+
+    const button =
+      document.createElement("button");
+
+    button.className = "btn";
+
+    button.id = "guestBtn";
+
+    button.style.width = "100%";
+    button.style.marginTop = "14px";
+
+    button.textContent =
+      "👤 Continue as Guest";
+
+    button.onclick =
+      enterGuestMode;
+
+    const error =
+      $("authError");
+
+    if (error) {
+      error.parentNode.insertBefore(
+        button,
+        error
+      );
+    }
+  }
+
+
+  /* =========================================================
+     REGISTER
+  ========================================================= */
+
+  async function register() {
+
+    const username =
+      $("registerUsername")
+        .value
+        .trim();
+
+    if (username.length < 2) {
+
+      return authError(
+        "Username must contain at least 2 characters."
+      );
+    }
+
+    authError("");
+
+    $("registerBtn").disabled = true;
+
+    $("registerBtn").textContent =
+      "Creating…";
+
+    try {
+
+      const data =
+        await api(
+          "/api/register",
+          {
+            method:"POST",
+            body:JSON.stringify({
+              username
+            })
+          }
+        );
+
+      await finishLogin(data);
+
+    } catch (e) {
+
+      authError(e.message);
+
+    } finally {
+
+      $("registerBtn").disabled =
+        false;
+
+      $("registerBtn").textContent =
+        "Create permanent Dino ID";
+    }
+  }
+
+
+  /* =========================================================
+     LOGIN
+  ========================================================= */
+
+  async function login() {
+
+    const dinoId =
+      $("loginDinoId")
+        .value
+        .trim()
+        .toUpperCase();
+
+    if (!dinoId) {
+
+      return authError(
+        "Enter your permanent Dino ID."
+      );
+    }
+
+    authError("");
+
+    $("loginBtn").disabled =
+      true;
+
+    $("loginBtn").textContent =
+      "Signing in…";
+
+    try {
+
+      const data =
+        await api(
+          "/api/login",
+          {
+            method:"POST",
+            body:JSON.stringify({
+              dinoId
+            })
+          }
+        );
+
+      await finishLogin(data);
+
+    } catch (e) {
+
+      authError(e.message);
+
+    } finally {
+
+      $("loginBtn").disabled =
+        false;
+
+      $("loginBtn").textContent =
+        "Sign in";
+    }
+  }
+
+
+  $("registerBtn").onclick =
+    register;
+
+  $("loginBtn").onclick =
+    login;
+
+
+  /* =========================================================
+     LOGIN FINISH
+  ========================================================= */
+
+  async function finishLogin(data) {
+
+    isGuest = false;
+
+    localStorage.removeItem(
+      GUEST_KEY
+    );
+
+    token =
+      data.token ||
+      data.accessToken ||
+      token;
+
+    if (!token) {
+
+      throw new Error(
+        "Server did not return a login token."
+      );
+    }
+
+    localStorage.setItem(
+      TOKEN_KEY,
+      token
+    );
+
+    if (data.user) {
+
+      localStorage.setItem(
+        USER_KEY,
+        JSON.stringify(data.user)
+      );
+    }
+
+    await bootstrap();
+
+    showAuth(false);
+
+    toast(
+      `Welcome, ${user.username}!`
+    );
+  }
+
+
+  /* =========================================================
+     SERVER HEALTH
+  ========================================================= */
+
+  async function health() {
+
+    try {
+
+      const r =
+        await fetch(
+          API + "/api/health"
+        );
+
+      if (!r.ok) {
+        throw new Error();
+      }
+
+      setServer(
+        true,
+        "DinoChat server online"
+      );
+
+      return await r.json();
+
+    } catch {
+
+      setServer(
+        false,
+        "Server unavailable"
+      );
+
+      return null;
+    }
+  }
+
+
+  /* =========================================================
+     BOOTSTRAP
+  ========================================================= */
+
+  async function bootstrap() {
+
+    if (isGuest) {
+      return;
+    }
+
+    setServer(
+      false,
+      "Connecting…"
+    );
+
+    const account =
+      await api(
+        "/api/account"
+      );
+
+    await health();
+
+    user =
+      account.user ||
+      account;
+
+    localStorage.setItem(
+      USER_KEY,
+      JSON.stringify(user)
+    );
+
+    updateProfile();
+
+    await Promise.all([
+      loadMessages(),
+      loadRankings(),
+      loadAchievements(),
+      loadFriends(),
+      loadSocial(),
+      loadBets(),
+      loadLayout()
+    ]);
+
+    connectSocket();
+
+    applyTheme();
+
+    renderThemes();
+
+    renderScores();
+
+    renderAccount();
+
+    renderLayoutButtons();
+
+    setServer(
+      true,
+      "DinoChat server online"
+    );
+  }
+
+
+  /* =========================================================
+     PROFILE
+  ========================================================= */
+
+  function updateProfile() {
+
+    const username =
+      user?.username ||
+      "DinoUser";
+
+    const dinoId =
+      user?.dino_id ||
+      user?.dinoId ||
+      "DINO-…";
+
+    if ($("sideName"))
+      $("sideName").textContent =
+        username;
+
+    if ($("sideDinoId"))
+      $("sideDinoId").textContent =
+        dinoId;
+
+    if ($("sideAvatar"))
+      $("sideAvatar").textContent =
+        username
+          .charAt(0)
+          .toUpperCase();
+
+    if ($("scoreName"))
+      $("scoreName").textContent =
+        username;
+  }
+
+
+  function renderAccount() {
+
+    if (!user) return;
+
+    if ($("usernameInput"))
+      $("usernameInput").value =
+        user.username || "";
+
+    if ($("dinoIdInput"))
+      $("dinoIdInput").value =
+        user.dino_id ||
+        user.dinoId ||
+        "";
+
+    if ($("betBalance"))
+      $("betBalance").textContent =
+        Number(
+          user.dino_score ??
+          0
+        ).toFixed(2);
+  }
+
+
+  /* =========================================================
+     ACCOUNT SAVE
+  ========================================================= */
+
+  async function saveAccount() {
+
+    if (!requireDinoId())
+      return;
+
+    const username =
+      $("usernameInput")
+        .value
+        .trim();
+
+    if (!username) {
+      return toast(
+        "Enter a username."
+      );
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/account/username",
+          {
+            method:"PUT",
+            body:JSON.stringify({
+              username
+            })
+          }
+        );
+
+      user =
+        data.user ||
+        data;
+
+      localStorage.setItem(
+        USER_KEY,
+        JSON.stringify(user)
+      );
+
+      updateProfile();
+
+      toast(
+        "Username updated."
+      );
+
+    } catch (e) {
+
+      toast(e.message);
+    }
+  }
+
+  window.saveAccount =
+    saveAccount;
+
+
+  /* =========================================================
+     MESSAGES
+  ========================================================= */
+
+  async function loadMessages() {
+
+    if (isGuest) {
+
+      renderGuestMessages();
+
+      return;
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/messages"
+        );
+
+      messages =
+        (
+          data.messages ||
+          data ||
+          []
+        ).map(
+          normalizeMessage
+        );
+
+      renderMessages();
+
+    } catch (e) {
+
+      toast(e.message);
+    }
+  }
+
+
+  function normalizeMessage(m) {
+
+    return {
+      ...m,
+
+      id:m.id,
+
+      dinoId:
+        m.dinoId ||
+        m.dino_id,
+
+      username:
+        m.username ||
+        "Dino",
+
+      text:
+        m.text ||
+        m.content ||
+        "",
+
+      time:
+        m.time ||
+        new Date(
+          m.created_at ||
+          Date.now()
+        ).toLocaleTimeString(
+          [],
+          {
+            hour:"2-digit",
+            minute:"2-digit"
+          }
+        )
+    };
+  }
+
+
+  function renderGuestMessages() {
+
+    const c =
+      $("messages");
+
+    if (!c) return;
+
+    if (!messages.length) {
+
+      c.innerHTML = `
+        <div class="empty-chat">
+          <div class="empty-chat-icon">
+            🦖
+          </div>
+
+          <h3>
+            Welcome to Dinosaur
+          </h3>
+
+          <p>
+            You are browsing as Guest User.
+          </p>
+
+          <p>
+            Create a Dino ID to send
+            messages to the global chat.
+          </p>
+        </div>
+      `;
+
+      return;
+    }
+
+    renderMessages();
+  }
+
+
+  function renderMessages() {
+
+    const c =
+      $("messages");
+
+    if (!c) return;
+
+    if (!messages.length) {
+
+      c.innerHTML = `
+        <div class="empty-chat">
+          <div class="empty-chat-icon">
+            🦖
+          </div>
+
+          <h3>
+            Welcome to Dinosaur
+          </h3>
+
+          <p>
+            Start the global conversation.
+          </p>
+        </div>
+      `;
+
+      return;
+    }
+
+    c.innerHTML =
+      messages
+        .map(m => {
+
+          const mine =
+            m.dinoId ===
+            (
+              user?.dino_id ||
+              user?.dinoId
+            );
+
+          return `
+            <div class="message ${mine ? "mine" : ""}">
+
+              <div class="avatar">
+                🦖
+              </div>
+
+              <div class="bubble">
+
+                <div>
+                  <span class="message-name">
+                    ${esc(m.username)}
+                  </span>
+
+                  <span class="message-time">
+                    ${esc(m.time)}
+                  </span>
+                </div>
+
+                <p class="message-text">
+                  ${esc(m.text)}
+                </p>
+
+                ${
+                  mine && !isGuest
+                    ? `
+                      <div class="message-controls">
+
+                        <button
+                          onclick="editServerMessage('${esc(m.id)}')"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onclick="deleteServerMessage('${esc(m.id)}')"
+                        >
+                          Delete
+                        </button>
+
+                      </div>
+                    `
+                    : ""
+                }
+
+              </div>
+
+            </div>
+          `;
+
+        })
+        .join("");
+
+    c.scrollTop =
+      c.scrollHeight;
+  }
+
+
+  /* =========================================================
+     SEND MESSAGE
+  ========================================================= */
+
+  async function sendMessage() {
+
+    if (isGuest) {
+
+      toast(
+        "🔒 You need a Dino ID to send messages."
+      );
+
+      return;
+    }
+
+    const input =
+      $("messageInput");
+
+    const text =
+      input.value.trim();
+
+    if (!text || !token)
+      return;
+
+    if (socket?.connected) {
+
+      socket.emit(
+        "send-message",
+        {
+          text
+        }
+      );
+
+      input.value = "";
+
+      return;
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/messages",
+          {
+            method:"POST",
+            body:JSON.stringify({
+              content:text,
+              text
+            })
+          }
+        );
+
+      messages.push(
+        normalizeMessage(
+          data.message ||
+          data
+        )
+      );
+
+      input.value = "";
+
+      renderMessages();
+
+    } catch (e) {
+
+      toast(e.message);
+    }
+  }
+
+
+  window.editServerMessage =
+    async id => {
+
+      if (!requireDinoId())
+        return;
+
+      const m =
+        messages.find(
+          x => x.id === id
+        );
+
+      if (!m) return;
+
+      const text =
+        prompt(
+          "Edit message:",
+          m.text
+        );
+
+      if (!text?.trim())
+        return;
+
+      try {
+
+        const data =
+          await api(
+            `/api/messages/${encodeURIComponent(id)}`,
+            {
+              method:"PUT",
+              body:JSON.stringify({
+                content:text.trim(),
+                text:text.trim()
+              })
+            }
+          );
+
+        const nm =
+          normalizeMessage(
+            data.message ||
+            data
+          );
+
+        messages =
+          messages.map(
+            x =>
+              x.id === id
+                ? nm
+                : x
+          );
+
+        renderMessages();
+
+      } catch (e) {
+
+        toast(e.message);
+      }
+    };
+
+
+  window.deleteServerMessage =
+    async id => {
+
+      if (!requireDinoId())
+        return;
+
+      if (!confirm(
+        "Delete this message?"
+      )) {
+        return;
+      }
+
+      try {
+
+        await api(
+          `/api/messages/${encodeURIComponent(id)}`,
+          {
+            method:"DELETE"
+          }
+        );
+
+        messages =
+          messages.filter(
+            x => x.id !== id
+          );
+
+        renderMessages();
+
+      } catch (e) {
+
+        toast(e.message);
+      }
+    };
+
+
+  $("sendButton").onclick =
+    sendMessage;
+
+
+  $("messageInput")
+    .addEventListener(
+      "keydown",
+      e => {
+
+        if (
+          e.key === "Enter" &&
+          !e.shiftKey &&
+          $("enterToSend")?.checked
+        ) {
+
+          e.preventDefault();
+
+          sendMessage();
+        }
+      }
+    );
+
+
+  /* =========================================================
+     SOCKET
+  ========================================================= */
+
+  function connectSocket() {
+
+    if (isGuest)
+      return;
+
+    if (socket) {
+      socket.disconnect();
+    }
+
+    socket =
+      io(
+        API,
+        {
+          transports:[
+            "websocket",
+            "polling"
+          ],
+
+          auth:{
+            token
+          }
+        }
+      );
+
+    socket.on(
+      "connect",
+      () => {
+
+        socket.emit(
+          "join-dinosaur",
+          {
+            token
+          }
+        );
+
+        setServer(
+          true,
+          "DinoChat server online"
+        );
+      }
+    );
+
+    socket.on(
+      "new-message",
+      m => {
+
+        const nm =
+          normalizeMessage(m);
+
+        if (
+          !messages.some(
+            x => x.id === nm.id
+          )
+        ) {
+
+          messages.push(nm);
+
+          messages =
+            messages.slice(-200);
+
+          renderMessages();
+        }
+      }
+    );
+
+    socket.on(
+      "message-deleted",
+      id => {
+
+        messages =
+          messages.filter(
+            x => x.id !== id
+          );
+
+        renderMessages();
+      }
+    );
+
+    socket.on(
+      "connect_error",
+      () =>
+        setServer(
+          false,
+          "Server connection error"
+        )
+    );
+
+    socket.on(
+      "disconnect",
+      () =>
+        setServer(
+          false,
+          "Server disconnected"
+        )
+    );
+  }
+
+
+  /* =========================================================
+     SCORES
+  ========================================================= */
+
+  async function loadRankings() {
+
+    if (isGuest) {
+
+      renderScores();
+
+      return;
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/scores"
+        );
+
+      currentRankings =
+        data.rankings ||
+        data.users ||
+        data ||
+        [];
+
+      renderScores();
+
+    } catch (e) {
+
+      toast(e.message);
+    }
+  }
+
+
+  function renderScores() {
+
+    const score =
+      Number(
+        user?.dino_score ??
+        user?.dinoScore ??
+        0
+      );
+
+    if (isGuest) {
+
+      if ($("scoreNumber"))
+        $("scoreNumber").textContent =
+          "—";
+
+      if ($("scoreRowNumber"))
+        $("scoreRowNumber").textContent =
+          "—";
+
+      if ($("coinNumber"))
+        $("coinNumber").textContent =
+          "—";
+
+      if ($("betBalance"))
+        $("betBalance").textContent =
+          "—";
+
+      if ($("scoreName"))
+        $("scoreName").textContent =
+          "Guest User";
+
+    } else {
+
+      if ($("scoreNumber"))
+        $("scoreNumber").textContent =
+          score.toFixed(2);
+
+      if ($("scoreRowNumber"))
+        $("scoreRowNumber").textContent =
+          score.toFixed(2);
+
+      if ($("coinNumber"))
+        $("coinNumber").textContent =
+          score.toFixed(2);
+
+      if ($("betBalance"))
+        $("betBalance").textContent =
+          score.toFixed(2);
+    }
+
+    const rankCard =
+      $("liveRanking");
+
+    if (!rankCard)
+      return;
+
+    if (isGuest) {
+
+      rankCard.innerHTML = `
+        <tr>
+          <td colspan="3">
+            🔒 Sign in with a Dino ID to access live Dino rankings.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    rankCard.innerHTML =
+      (
+        currentRankings || []
+      )
+      .slice(0,100)
+      .map(
+        (r,i) => {
+
+          const d =
+            r.dino_id ||
+            r.dinoId;
+
+          return `
+            <tr
+              class="${
+                d ===
+                (
+                  user?.dino_id ||
+                  user?.dinoId
+                )
+                ? "rank-me"
+                : ""
+              }"
+            >
+
+              <td>
+                ${r.rank || i + 1}
+              </td>
+
+              <td>
+
+                <b>
+                  ${esc(
+                    r.username ||
+                    "Dino"
+                  )}
+                </b>
+
+                <div class="online-mini">
+                  ${esc(d || "")}
+                </div>
+
+              </td>
+
+              <td>
+                ${Number(
+                  r.dino_score ??
+                  r.score ??
+                  0
+                ).toFixed(2)}
+              </td>
+
+            </tr>
+          `;
+        }
+      )
+      .join("")
+      ||
+      `
+        <tr>
+          <td colspan="3">
+            No rankings yet.
+          </td>
+        </tr>
+      `;
+  }
+
+
+  /* =========================================================
+     ACHIEVEMENTS
+  ========================================================= */
+
+  async function loadAchievements() {
+
+    const container =
+      $("achievementGrid");
+
+    if (!container)
+      return;
+
+    if (isGuest) {
+
+      container.innerHTML = `
+        <div class="feature-card">
+
+          <div style="font-size:34px">
+            🔒
+          </div>
+
+          <h3>
+            Dino ID Required
+          </h3>
+
+          <p>
+            Achievements are attached to a permanent Dino ID.
+          </p>
+
+          <button
+            class="btn primary"
+            onclick="openDinoLogin()"
+          >
+            Get Dino ID
+          </button>
+
+        </div>
+      `;
+
+      return;
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/achievements"
+        );
+
+      const achievements =
+        data.achievements ||
+        data ||
+        [];
+
+      container.innerHTML =
+        achievements
+          .map(
+            x => `
+              <div class="feature-card">
+
+                <div style="font-size:34px">
+                  ${esc(x.icon || "🏅")}
+                </div>
+
+                <h3>
+                  ${esc(
+                    x.name ||
+                    x.code
+                  )}
+                </h3>
+
+                <p>
+                  ${esc(
+                    x.description ||
+                    ""
+                  )}
+                </p>
+
+                <span class="pill">
+                  ${
+                    x.achieved_at
+                      ? "Unlocked"
+                      : "Locked"
+                  }
+                </span>
+
+              </div>
+            `
+          )
+          .join("")
+          ||
+          `
+            <div class="card">
+              No achievements yet.
+            </div>
+          `;
+
+    } catch (e) {
+
+      toast(e.message);
+    }
+  }
+
+
+  /* =========================================================
+     FRIENDS
+  ========================================================= */
+
+  async function loadFriends() {
+
+    if (isGuest) {
+
+      if ($("incomingFriends"))
+        $("incomingFriends").innerHTML = `
+          <p class="online-mini">
+            🔒 A Dino ID is required to use Friends.
+          </p>
+        `;
+
+      if ($("friendList"))
+        $("friendList").innerHTML = `
+          <p class="online-mini">
+            Create a Dino ID to add friends.
+          </p>
+        `;
+
+      return;
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/friends"
+        );
+
+      const incoming =
+        data.incoming ||
+        data.requests ||
+        [];
+
+      const friends =
+        data.friends ||
+        [];
+
+      $("incomingFriends").innerHTML =
+        incoming
+          .map(
+            x => `
+              <div class="request">
+
+                <span>
+
+                  <b>
+                    ${esc(
+                      x.username ||
+                      x.sender_username ||
+                      "Dino"
+                    )}
+                  </b>
+
+                  <br>
+
+                  <small>
+                    ${esc(
+                      x.dino_id ||
+                      x.sender_dino_id ||
+                      ""
+                    )}
+                  </small>
+
+                </span>
+
+                <button
+                  class="btn"
+                  onclick="acceptFriend('${esc(x.id)}')"
+                >
+                  Accept
+                </button>
+
+              </div>
+            `
+          )
+          .join("")
+          ||
+          `
+            <p class="online-mini">
+              No pending requests.
+            </p>
+          `;
+
+      $("friendList").innerHTML =
+        friends
+          .map(
+            x => `
+              <div class="request">
+
+                <span>
+
+                  <b>
+                    ${esc(
+                      x.username ||
+                      "Dino"
+                    )}
+                  </b>
+
+                  <br>
+
+                  <small>
+                    ${esc(
+                      x.dino_id ||
+                      x.dinoId ||
+                      ""
+                    )}
+                  </small>
+
+                </span>
+
+                <span class="pill">
+                  Friend
+                </span>
+
+              </div>
+            `
+          )
+          .join("")
+          ||
+          `
+            <p class="online-mini">
+              No friends yet.
+            </p>
+          `;
+    } catch (e) {
+
+      toast(e.message);
+    }
+  }
+
+
+  $("sendFriendBtn").onclick =
+    async () => {
+
+      if (!requireDinoId())
+        return;
+
+      const dinoId =
+        $("friendDinoId")
+          .value
+          .trim();
+
+      if (!dinoId)
+        return;
+
+      try {
+
+        await api(
+          "/api/friends/request",
+          {
+            method:"POST",
+            body:JSON.stringify({
+              dinoId
+            })
+          }
+        );
+
+        $("friendDinoId").value = "";
+
+        toast(
+          "Friend request sent."
+        );
+
+      } catch (e) {
+
+        toast(e.message);
+      }
+    };
+
+
+  window.acceptFriend =
+    async id => {
+
+      if (!requireDinoId())
+        return;
+
+      try {
+
+        await api(
+          `/api/friends/${encodeURIComponent(id)}/accept`,
+          {
+            method:"POST"
+          }
+        );
+
+        await loadFriends();
+
+        toast(
+          "Friend request accepted."
+        );
+
+      } catch (e) {
+
+        toast(e.message);
+      }
+    };
+
+
+  /* =========================================================
+     SOCIAL
+  ========================================================= */
+
+  function validSocialUrl(
+    type,
+    url
+  ) {
+
+    try {
+
+      const u =
+        new URL(url);
+
+      const h =
+        u.hostname
+          .toLowerCase()
+          .replace(
+            /^www\./,
+            ""
+          );
+
+      if (type === "instagram") {
+
+        return (
+          h === "instagram.com" ||
+          h.endsWith(
+            ".instagram.com"
+          )
+        );
+      }
+
+      return (
+        h === "snapchat.com" ||
+        h.endsWith(
+          ".snapchat.com"
+        )
+      );
+
+    } catch {
+
+      return false;
+    }
+  }
+
+
+  async function loadSocial() {
+
+    const list =
+      $("socialList");
+
+    if (!list)
+      return;
+
+    if (isGuest) {
+
+      list.innerHTML = `
+        <div class="card">
+
+          <h3>
+            Social Corner
+          </h3>
+
+          <p>
+            Guests can view this area.
+            A Dino ID is required to submit
+            and track social content.
+          </p>
+
+        </div>
+      `;
+
+      return;
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/social"
+        );
+
+      const items =
+        data.content ||
+        data.social ||
+        data ||
+        [];
+
+      list.innerHTML =
+        items
+          .map(
+            x => `
+              <div class="social-item">
+
+                <div>
+
+                  <b>
+                    ${
+                      x.content_type === "instagram"
+                        ? "📸 Instagram"
+                        : "👻 Snapchat"
+                    }
+                  </b>
+
+                  <br>
+
+                  <small>
+                    ${esc(x.url)}
+                  </small>
+
+                  <br>
+
+                  <span class="pill">
+                    👀 ${
+                      Number(
+                        x.unique_views ??
+                        x.uniqueViews ??
+                        0
+                      )
+                    } Dino views
+                  </span>
+
+                </div>
+
+                <button
+                  class="btn"
+                  onclick="openSocial(
+                    '${esc(x.id)}',
+                    '${esc(x.url)}'
+                  )"
+                >
+                  Open
+                </button>
+
+              </div>
+            `
+          )
+          .join("")
+          ||
+          `
+            <div class="card">
+              No social links submitted yet.
+            </div>
+          `;
+
+    } catch (e) {
+
+      toast(e.message);
+    }
+  }
+
+
+  window.openSocial =
+    async (
+      id,
+      url
+    ) => {
+
+      try {
+
+        if (!isGuest) {
+
+          await api(
+            `/api/social/${encodeURIComponent(id)}/view`,
+            {
+              method:"POST"
+            }
+          );
+        }
+
+      } catch {}
+
+      window.open(
+        url,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      loadSocial();
+    };
+
+
+  $("submitSocialBtn").onclick =
+    async () => {
+
+      if (!requireDinoId())
+        return;
+
+      const type =
+        $("socialType").value;
+
+      const url =
+        $("socialUrl")
+          .value
+          .trim();
+
+      $("socialError").textContent =
+        "";
+
+      if (
+        !validSocialUrl(
+          type,
+          url
+        )
+      ) {
+
+        $("socialError").textContent =
+          "That URL is not a valid Instagram/Snapchat domain for the selected type.";
+
+        return;
+      }
+
+      try {
+
+        await api(
+          "/api/social",
+          {
+            method:"POST",
+            body:JSON.stringify({
+              type,
+              contentType:type,
+              url
+            })
+          }
+        );
+
+        $("socialUrl").value = "";
+
+        toast(
+          "Social link submitted."
+        );
+
+        loadSocial();
+
+      } catch (e) {
+
+        $("socialError").textContent =
+          e.message;
+      }
+    };
+
+
+  /* =========================================================
+     BET
+  ========================================================= */
+
+  async function loadBets() {
+
+    const list =
+      $("betList");
+
+    if (!list)
+      return;
+
+    if (isGuest) {
+
+      list.innerHTML = `
+        <div class="feature-card">
+
+          <div style="font-size:32px">
+            🔒
+          </div>
+
+          <h3>
+            Dino ID Required
+          </h3>
+
+          <p>
+            Guests can see the Bet system,
+            but cannot create or accept bets.
+          </p>
+
+          <button
+            class="btn primary"
+            onclick="openDinoLogin()"
+          >
+            Get Dino ID
+          </button>
+
+        </div>
+      `;
+
+      if ($("betBalance"))
+        $("betBalance").textContent =
+          "—";
+
+      return;
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/bets"
+        );
+
+      const bets =
+        data.bets ||
+        data ||
+        [];
+
+      list.innerHTML =
+        bets
+          .map(
+            b => `
+              <div class="request">
+
+                <span>
+
+                  <b>
+                    ${esc(
+                      b.creator_dino_id ||
+                      b.creatorDinoId ||
+                      ""
+                    )}
+                  </b>
+
+                  vs
+
+                  <b>
+                    ${esc(
+                      b.opponent_dino_id ||
+                      b.opponentDinoId ||
+                      "Open"
+                    )}
+                  </b>
+
+                  <br>
+
+                  <small>
+                    Stake
+                    ${Number(
+                      b.stake || 0
+                    ).toFixed(2)}
+
+                    ·
+
+                    ${esc(
+                      b.status || ""
+                    )}
+                  </small>
+
+                </span>
+
+                ${
+                  b.status === "waiting" &&
+                  String(
+                    b.opponent_id ||
+                    b.opponentId
+                  ) ===
+                  String(
+                    user?.id || ""
+                  )
+                    ? `
+                      <button
+                        class="btn"
+                        onclick="acceptBet('${esc(b.id)}')"
+                      >
+                        Accept
+                      </button>
+                    `
+                    : ""
+                }
+
+              </div>
+            `
+          )
+          .join("")
+          ||
+          `
+            <p class="online-mini">
+              No bets.
+            </p>
+          `;
+
+    } catch (e) {
+
+      toast(e.message);
+    }
+  }
+
+
+  $("createBetBtn").onclick =
+    async () => {
+
+      if (!requireDinoId())
+        return;
+
+      const opponentDinoId =
+        $("betOpponent")
+          .value
+          .trim();
+
+      const stake =
+        Number(
+          $("betStake").value
+        );
+
+      if (
+        !opponentDinoId ||
+        !(stake > 0)
+      ) {
+
+        return toast(
+          "Enter opponent and stake."
+        );
+      }
+
+      try {
+
+        await api(
+          "/api/bets",
+          {
+            method:"POST",
+            body:JSON.stringify({
+              opponentDinoId,
+              stake,
+              game:"chess"
+            })
+          }
+        );
+
+        toast(
+          "Chess bet created."
+        );
+
+        loadBets();
+
+      } catch (e) {
+
+        toast(e.message);
+      }
+    };
+
+
+  window.acceptBet =
+    async id => {
+
+      if (!requireDinoId())
+        return;
+
+      try {
+
+        await api(
+          `/api/bets/${encodeURIComponent(id)}/accept`,
+          {
+            method:"POST"
+          }
+        );
+
+        toast(
+          "Bet accepted."
+        );
+
+        loadBets();
+
+      } catch (e) {
+
+        toast(e.message);
+      }
+    };
+
+
+  /* =========================================================
+     THEMES
+  ========================================================= */
+
+  const themes = {
+
+    mint:{
+      name:"Mint",
+      bg:"#effaf3",
+      primary:"#18864b",
+      soft:"#dcf4e5",
+      pattern:
+        "linear-gradient(#18864b0c 1px,transparent 1px),linear-gradient(90deg,#18864b0c 1px,transparent 1px)"
+    },
+
+    peach:{
+      name:"Peach",
+      bg:"#fff7f1",
+      primary:"#d56b3d",
+      soft:"#ffe8d9",
+      pattern:
+        "radial-gradient(circle at 20px 20px,#d56b3d12 0 12px,transparent 13px)"
+    },
+
+    lavender:{
+      name:"Lavender",
+      bg:"#f8f5ff",
+      primary:"#7658b8",
+      soft:"#ece5ff",
+      pattern:
+        "linear-gradient(45deg,#7658b80c 25%,transparent 25%,transparent 75%,#7658b80c 75%)"
+    },
+
+    sky:{
+      name:"Sky",
+      bg:"#f2faff",
+      primary:"#277bb5",
+      soft:"#dff1ff",
+      pattern:
+        "linear-gradient(135deg,#277bb50d 25%,transparent 25%,transparent 75%,#277bb50d 75%)"
+    },
+
+    lemon:{
+      name:"Lemon",
+      bg:"#fffdf0",
+      primary:"#9b8618",
+      soft:"#fff5b8",
+      pattern:
+        "radial-gradient(circle,#9b86180d 2px,transparent 3px) 0 0/18px 18px"
+    },
+
+    rose:{
+      name:"Rose",
+      bg:"#fff5f7",
+      primary:"#bd536f",
+      soft:"#ffe0e8",
+      pattern:
+        "linear-gradient(30deg,#bd536f0c 12%,transparent 12.5%,transparent 87%,#bd536f0c 87.5%) 0 0/22px 22px"
+    },
+
+    sage:{
+      name:"Sage",
+      bg:"#f5f8f1",
+      primary:"#658653",
+      soft:"#e4eedc",
+      pattern:
+        "linear-gradient(#6586530c 1px,transparent 1px),linear-gradient(90deg,#6586530c 1px,transparent 1px)"
+    },
+
+    periwinkle:{
+      name:"Periwinkle",
+      bg:"#f5f7ff",
+      primary:"#5c75c7",
+      soft:"#e5ebff",
+      pattern:
+        "linear-gradient(45deg,#5c75c70c 25%,transparent 25%,transparent 75%,#5c75c70c 75%)"
+    },
+
+    ice:{
+      name:"Ice Glass",
+      bg:"#f4fbff",
+      primary:"#3b8bbd",
+      soft:"#e3f4ff",
+      pattern:
+        "radial-gradient(circle at 20px 20px,#3b8bbd10 0 14px,transparent 15px)"
+    },
+
+    sand:{
+      name:"Sand",
+      bg:"#fbf8ef",
+      primary:"#9a7440",
+      soft:"#efe2c8",
+      pattern:
+        "linear-gradient(135deg,#9a74400b 25%,transparent 25%,transparent 50%,#9a74400b 50%,#9a74400b 75%,transparent 75%) 0 0/24px 24px"
+    },
+
+    darkGold:{
+      name:"Dark Gold",
+      bg:"#15120a",
+      primary:"#e2b84a",
+      soft:"#3b3015",
+      pattern:
+        "linear-gradient(#e2b84a10 1px,transparent 1px),linear-gradient(90deg,#e2b84a10 1px,transparent 1px)"
+    },
+
+    darkBlue:{
+      name:"Dark Blue",
+      bg:"#08111f",
+      primary:"#4f9cff",
+      soft:"#132a45",
+      pattern:
+        "radial-gradient(circle at 20px 20px,#4f9cff10 0 12px,transparent 13px)"
+    }
+  };
+
+
+  function applyTheme() {
+
+    const name =
+      localStorage.getItem(
+        "dino_theme"
+      ) || "mint";
+
+    const t =
+      themes[name] ||
+      themes.mint;
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--bg",
+        t.bg
+      );
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--primary",
+        t.primary
+      );
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--primary-dark",
+        t.primary
+      );
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--soft",
+        t.soft
+      );
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--pattern",
+        t.pattern
+      );
+
+    const dark =
+      name.startsWith("dark");
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--text",
+        dark
+          ? "#f5f7fb"
+          : "#173526"
+      );
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--muted",
+        dark
+          ? "#aeb9c8"
+          : "#688073"
+      );
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--card",
+        dark
+          ? "#111a27"
+          : "#ffffff"
+      );
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--card2",
+        dark
+          ? "#0d1622"
+          : "#f7fdf9"
+      );
+
+    document.documentElement
+      .style
+      .setProperty(
+        "--border",
+        dark
+          ? "#26384d"
+          : "#cde6d6"
+      );
+  }
+
+
+  function renderThemes() {
+
+    const c =
+      $("themeGrid");
+
+    if (!c) return;
+
+    const selected =
+      localStorage.getItem(
+        "dino_theme"
+      ) || "mint";
+
+    c.innerHTML =
+      Object.entries(themes)
+        .map(
+          ([k,t]) => `
+            <button
+              class="theme-button ${
+                k === selected
+                  ? "selected"
+                  : ""
+              }"
+              onclick="setTheme('${k}')"
+            >
+
+              <div
+                class="theme-preview"
+                style="
+                  background:${t.bg};
+                  background-image:${t.pattern}
+                "
+              ></div>
+
+              <strong>
+                ${esc(t.name)}
+              </strong>
+
+              <small>
+                ${
+                  k.startsWith("dark")
+                    ? "Dark UI"
+                    : "Light UI"
+                }
+              </small>
+
+            </button>
+          `
+        )
+        .join("");
+  }
+
+
+  window.setTheme =
+    k => {
+
+      if (!themes[k])
+        return;
+
+      localStorage.setItem(
+        "dino_theme",
+        k
+      );
+
+      applyTheme();
+
+      renderThemes();
+    };
+
+
+  /* =========================================================
+     LAYOUT
+  ========================================================= */
+
+  async function loadLayout() {
+
+    if (isGuest) {
+
+      applyLayout(
+        localStorage.getItem(
+          "dino_layout"
+        ) || "classic"
+      );
+
+      return;
+    }
+
+    try {
+
+      const data =
+        await api(
+          "/api/layout"
+        );
+
+      const name =
+        data.layout_name ||
+        data.layoutName ||
+        "classic";
+
+      applyLayout(name);
+
+    } catch {
+
+      applyLayout(
+        localStorage.getItem(
+          "dino_layout"
+        ) || "classic"
+      );
+    }
+  }
+
+
+  function applyLayout(name) {
+
+    document.body.className =
+      [
+        ...document.body.classList
+      ]
+      .filter(
+        x =>
+          !x.startsWith(
+            "layout-"
+          )
+      )
+      .join(" ");
+
+    document.body.classList.add(
+      "layout-" + name
+    );
+
+    localStorage.setItem(
+      "dino_layout",
+      name
+    );
+
+    renderLayoutButtons();
+  }
+
+
+  function renderLayoutButtons() {
+
+    const c =
+      $("layoutGrid");
+
+    if (!c) return;
+
+    const active =
+      localStorage.getItem(
+        "dino_layout"
+      ) || "classic";
+
+    c.innerHTML =
+      layouts
+        .map(
+          ([k,n]) => `
+            <button
+              class="layout-btn ${
+                k === active
+                  ? "selected"
+                  : ""
+              }"
+              onclick="chooseLayout('${k}')"
+            >
+
+              <b>
+                ${esc(n)}
+              </b>
+
+              <br>
+
+              <small>
+                Position preset
+              </small>
+
+            </button>
+          `
+        )
+        .join("");
+  }
+
+
+  window.chooseLayout =
+    async name => {
+
+      applyLayout(name);
+
+      if (isGuest) {
+
+        toast(
+          "Layout saved for Guest Mode."
+        );
+
+        return;
+      }
+
+      try {
+
+        await api(
+          "/api/layout",
+          {
+            method:"PUT",
+            body:JSON.stringify({
+              layoutName:name,
+              layout_name:name,
+              layoutData:{}
+            })
+          }
+        );
+
+        toast(
+          "Layout saved."
+        );
+
+      } catch (e) {
+
+        toast(e.message);
+      }
+    };
+
+
+  /* =========================================================
+     PAGE NAVIGATION
+  ========================================================= */
+
+  function openPage(page) {
+
+    const scoreFeatures = [
+      "scores",
+      "achievements",
+      "bet"
+    ];
+
+    if (
+      isGuest &&
+      scoreFeatures.includes(page)
+    ) {
+
+      requireDinoId();
+
+      return;
+    }
+
+    document
+      .querySelectorAll(".page")
+      .forEach(
+        x =>
+          x.classList.remove(
+            "active"
+          )
+      );
+
+    const target =
+      $("page-" + page);
+
+    if (!target)
+      return;
+
+    target.classList.add(
+      "active"
+    );
+
+    document
+      .querySelectorAll(".nav")
+      .forEach(
+        x =>
+          x.classList.toggle(
+            "active",
+            x.dataset.page === page
+          )
+      );
+
+    const names = {
+
+      home:"Home",
+      chat:"Dinosaur",
+      manga:"Manga",
+      reels:"Reels & Snaps",
+      history:"History",
+      scores:"Dino Scores",
+      account:"Account",
+      settings:"Settings",
+      friends:"Friends",
+      achievements:"Achievements",
+      bet:"Bet",
+      social:"Insta + Snap"
+    };
+
+    $("pageTitle").textContent =
+      names[page] ||
+      "DinoChat";
+
+    $("pageSubtitle").textContent =
+      page === "chat"
+        ? "Global community chat"
+        : "DinoChat";
+
+    $("sidebar")
+      .classList
+      .remove("open");
+
+    if (page === "chat")
+      loadMessages();
+
+    if (page === "scores")
+      loadRankings();
+
+    if (page === "achievements")
+      loadAchievements();
+
+    if (page === "friends")
+      loadFriends();
+
+    if (page === "social")
+      loadSocial();
+
+    if (page === "bet")
+      loadBets();
+
+    if (page === "settings") {
+
+      renderThemes();
+      renderLayoutButtons();
+    }
+
+    if (page === "account")
+      renderAccount();
+  }
+
+
+  window.openPage =
+    openPage;
+
+
+  document
+    .querySelectorAll(".nav")
+    .forEach(
+      b =>
+        b.onclick =
+          () =>
+            openPage(
+              b.dataset.page
+            )
+    );
+
+
+  $("mobileMenu").onclick =
+    () =>
+      $("sidebar")
+        .classList
+        .toggle("open");
+
+
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
+
+  window.logoutDino =
+    async () => {
+
+      if (isGuest) {
+
+        exitGuestMode();
+
+        return;
+      }
+
+      try {
+
+        await api(
+          "/api/auth/logout",
+          {
+            method:"POST"
+          }
+        );
+
+      } catch {}
+
+      token = "";
+
+      user = null;
+
+      localStorage.removeItem(
+        TOKEN_KEY
+      );
+
+      localStorage.removeItem(
+        USER_KEY
+      );
+
+      if (socket) {
+
+        socket.disconnect();
+
+        socket = null;
+      }
+
+      showAuth(true);
+
+      switchAuth("login");
+
+      toast(
+        "Logged out."
+      );
+    };
+
+
+  /* =========================================================
+     ADD LIVE RANKING TABLE
+  ========================================================= */
+
+  const scorePage =
+    $("page-scores");
+
+  if (
+    scorePage &&
+    !$("liveRanking")
+  ) {
+
+    const box =
+      document.createElement(
+        "div"
+      );
+
+    box.className =
+      "card";
+
+    box.style.marginTop =
+      "16px";
+
+    box.innerHTML = `
+
+      <h3>
+        🌎 Live Global Dino Ranking
+      </h3>
+
+      <div style="overflow:auto">
+
+        <table class="table">
+
+          <thead>
+
+            <tr>
+
+              <th>#</th>
+
+              <th>Dino</th>
+
+              <th>Score</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody
+            id="liveRanking"
+          ></tbody>
+
+        </table>
+
+      </div>
+    `;
+
+    scorePage.appendChild(box);
+  }
+
+
+  /* =========================================================
+     STARTUP
+  ========================================================= */
+
+  (async () => {
+
+    applyTheme();
+
+    renderThemes();
+
+    renderLayoutButtons();
+
+    $("authStatus").textContent =
+      "Checking DinoChat server…";
+
+
+    /* =========================
+       GUEST STARTUP
+    ========================= */
+
+    if (isGuest) {
+
+      user = {
+
+        username:"Guest User",
+
+        dino_id:null,
+
+        dinoId:null,
+
+        dino_score:0,
+
+        dinoScore:0,
+
+        is_guest:true
+      };
+
+      showAuth(false);
+
+      updateProfile();
+
+      renderGuestProfile();
+
+      renderScores();
+
+      renderAccount();
+
+      loadMessages();
+
+      loadFriends();
+
+      loadSocial();
+
+      loadBets();
+
+      setServer(
+        true,
+        "Guest Mode"
+      );
+
+      openPage("home");
+
+      setTimeout(() => {
+
+        const intro =
+          $("intro");
+
+        if (intro) {
+
+          intro.style.opacity =
+            "0";
+
+          setTimeout(
+            () =>
+              intro.remove(),
+            500
+          );
+        }
+
+      },300);
+
+      return;
+    }
+
+
+    /* =========================
+       NORMAL ACCOUNT STARTUP
+    ========================= */
+
+    try {
+
+      if (token) {
+
+        await bootstrap();
+
+        showAuth(false);
+
+      } else {
+
+        await health();
+
+        showAuth(true);
+      }
+
+    } catch (e) {
+
+      token = "";
+
+      localStorage.removeItem(
+        TOKEN_KEY
+      );
+
+      showAuth(true);
+
+      authError(
+        "Please sign in or create a Dino account."
+      );
+
+      $("authStatus").textContent =
+        "Server is ready.";
+    }
+
+
+    setTimeout(() => {
+
+      const intro =
+        $("intro");
+
+      if (intro) {
+
+        intro.style.opacity =
+          "0";
+
+        setTimeout(
+          () =>
+            intro.remove(),
+          500
+        );
+      }
+
+    },300);
+
+  })();
+
 })();
 </script>
-
-</body>
-</html>
