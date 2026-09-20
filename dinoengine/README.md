@@ -1,31 +1,55 @@
-# DinoEngine v0.7 — professional web + Godot 2D engine
+# DinoEngine v0.8
 
-DinoEngine v0.7 expands the GPT-controlled development engine with professional web-building helpers, engine self-modification, Godot 2D project tooling and a branded dinosaur EXE icon.
+DinoEngine v0.8 is a GPT-controlled visual development engine for professional websites, 2D games and build artifacts.
 
-## Professional website tools
-- `professional_scaffold` — generates a responsive, semantic, accessible starter with navigation, hero, cards, responsive CSS, reduced-motion handling and clean structure.
-- `website_audit` — checks common production issues such as viewport, title, language and missing image alt text.
-- Existing file, Git, build, deployment, paint and animation tools remain available.
-- GPT can combine these tools into a design → code → audit → fix → build → publish loop.
+## Professional drawing toolkit
+Structured drawing documents support:
+- select, move, scale, rotate and transform
+- pen, pencil and brush
+- eraser
+- line, rectangle, rounded rectangle, ellipse, polygon and star
+- Bezier/path drawing
+- text
+- fill, gradient and eyedropper
+- crop, hand and zoom
+- ruler, grid, guides and snapping
+- layers, visibility, lock, groups and duplication
+- undo/redo snapshots
+- image import and SVG/PNG-oriented export workflows
+- animation timelines and CSS animation export
 
-## Engine modification
-- `engine_patch` explicitly lets GPT modify DinoEngine source.
-- GPT can add a feature, patch a bug, run the engine build/tests, commit the change and continue improving the engine.
-- File operations remain confined to `DINOENGINE_ROOT`.
+GPT can use `draw_create`, `draw_read`, `draw_export_svg` and `draw_tools` to turn a rough visual design into production UI.
 
-## Godot 2D
-- `godot_create_2d` creates a small Godot 2D starter project with `project.godot`, a scene and GDScript.
-- `godot_run` launches the installed Godot command/editor.
-- `godot_export` exports using an installed Godot preset.
-- The engine uses the installed Godot SDK/editor rather than embedding Godot itself.
+## Essential Godot 2D tooling
+DinoEngine can create and operate projects using an installed Godot toolchain. The feature plan covers:
+- scene tree / nodes
+- Sprite2D and AnimatedSprite2D
+- TileMap / TileMapLayer
+- CharacterBody2D, RigidBody2D and Area2D
+- collision shapes and physics
+- Camera2D
+- AnimationPlayer and AnimationTree
+- audio
+- particles
+- UI/Control nodes
+- signals
+- input actions
+- resources
+- GDScript
+- debugging and pause
+- save/load
+- export presets
+- run/play
 
-## EXE branding
-The Windows build generates a DinoEngine dinosaur icon and applies it to `DinoEngine.exe` during GitHub Actions packaging.
+Tools: `godot_project`, `godot_scene`, `godot_tool`, `godot_feature_plan`.
 
-## MCP / GPT
-- Local endpoint: `http://127.0.0.1:4387/mcp`
-- Protocol: DinoMCP/1.0 over JSON-RPC.
-- A compatible ChatGPT connector still has to be configured; the EXE alone does not automatically register itself as a ChatGPT plugin.
+## Engine self-modification
+`engine_patch` lets GPT deliberately modify DinoEngine source. GPT can patch/add a feature, build/test it, inspect errors, commit the result and continue.
+
+## ChatGPT plugin/app connection
+The engine exposes MCP. For current ChatGPT integration, package it as a custom MCP app using Developer Mode/Apps SDK. ChatGPT connects to a **remote MCP server**, not directly to `127.0.0.1`; for a local Windows engine use a supported Secure MCP Tunnel or another secure remote HTTPS MCP endpoint.
+
+The included `gpt-connector.json` is a configuration manifest, not an automatic registration. Publishing/connecting is controlled by ChatGPT workspace/app permissions.
 
 ## Security
-DinoEngine is localhost-only by default. Commands run with the local user's permissions, so only connect an AI to a workspace you trust.
+The engine is localhost-only by default and workspace paths are restricted. Review write, execute and deployment actions before connecting it to an AI service.
