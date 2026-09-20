@@ -1,0 +1,14 @@
+{
+  "name": "dinoengine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local AI development engine prototype with project/file/branch/edit/run tools.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}
