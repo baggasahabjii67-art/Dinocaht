@@ -1,20 +1,16 @@
 {
-  "name": "dinoengine",
-  "version": "0.3.0",
-  "private": true,
-  "description": "DinoEngine AI-controlled local development engine",
-  "main": "server.js",
-  "bin": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "package:win": "pkg . --targets node18-win-x64 --output release/DinoEngine.exe",
-    "package:win:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-win.ps1",
-    "dev": "node server.js"
+  "name":"dinoengine",
+  "version":"0.4.0",
+  "private":true,
+  "description":"DinoEngine GPT-controlled local development engine with MCP bridge",
+  "main":"server.js",
+  "bin":"server.js",
+  "scripts":{
+    "start":"node server.js",
+    "package:win":"pkg . --targets node18-win-x64 --output release/DinoEngine.exe",
+    "package:win:clean":"powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-win.ps1",
+    "dev":"node server.js"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "devDependencies": {
-    "@yao-pkg/pkg": "^6.6.0"
-  }
+  "engines":{"node":">=18"},
+  "devDependencies":{"@yao-pkg/pkg":"^6.6.0"}
 }
