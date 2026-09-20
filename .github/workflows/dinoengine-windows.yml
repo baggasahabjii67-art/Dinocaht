@@ -46,7 +46,7 @@ jobs:
           } finally { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
       - uses: actions/upload-artifact@v4
         with:
-          name: DinoEngine-v9-Windows-x64
+          name: DinoEngine-v10-Windows-x64
           path: dinoengine/release/DinoEngine.exe
           if-no-files-found: error
           retention-days: 30
