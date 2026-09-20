@@ -1,0 +1,15 @@
+{
+  "name": "dinoengine-local-tools",
+  "version": "0.1.0",
+  "description": "Tool contract for the DinoEngine prototype.",
+  "tools": [
+    {"name":"project.tree","method":"GET","path":"/api/tree"},
+    {"name":"file.read","method":"GET","path":"/api/file?path={path}"},
+    {"name":"file.write","method":"POST","path":"/api/file"},
+    {"name":"file.delete","method":"DELETE","path":"/api/file"},
+    {"name":"folder.create","method":"POST","path":"/api/folder"},
+    {"name":"code.run","method":"POST","path":"/api/run"},
+    {"name":"git.branch.create","method":"POST","path":"/api/git/branch"},
+    {"name":"git.status","method":"GET","path":"/api/git/status"}
+  ]
+}
