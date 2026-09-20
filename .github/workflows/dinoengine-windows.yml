@@ -48,7 +48,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: DinoEngine-v10-Windows-x64
-          path: dinoengine/release/DinoEngine.exe
+          path: |
+            dinoengine/release/DinoEngine.exe
+            dinoengine/run-remote.bat
           if-no-files-found: error
           retention-days: 30
 
