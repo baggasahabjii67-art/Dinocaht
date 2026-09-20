@@ -1,62 +1,29 @@
-# DinoEngine v0.3 — Windows EXE
+# DinoEngine v0.4 — GPT-controlled Windows engine
 
-DinoEngine can now be packaged as a standalone Windows executable.
+DinoEngine is a localhost development engine with a DinoMCP/1.0 bridge.
 
-## Build the EXE
-
-Requirements for building:
-- Windows
-- Node.js 18+
-- npm
-
-From this folder:
-
-```powershell
-npm install
-npm run package:win
-```
-
-Output:
-
-`release/DinoEngine.exe`
-
-Or run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/build-win.ps1
-```
-
-## Run the EXE
-
-Open Command Prompt or PowerShell in the project you want DinoEngine to control:
-
-```powershell
-$env:DINOENGINE_ROOT = "C:\\MyProject"
-.\\DinoEngine.exe
-```
-
-If `DINOENGINE_ROOT` is not set, DinoEngine uses the current working directory.
-
-Default API:
-
-`http://127.0.0.1:4387`
-
-The server remains localhost-only by default.
-
-## What this package is
-
-The EXE is the DinoEngine server packaged with its Node runtime, so the target machine does not need Node.js installed just to run the built EXE.
-
-For GPT/agent integration, the next layer is a native MCP adapter/connector. The EXE itself does not automatically become connected to ChatGPT merely by existing on Windows.
-
-## v0.3 capabilities
-
-- Project tree
-- File read/write/delete
-- Folder creation
-- Command execution
+## v0.4 capabilities
+- Workspace tree
+- Read/write/delete files
+- Create folders
+- Run commands
 - Runtime detection
 - Project inspection
 - Git status/log/diff/branch
+- Git checkout, commit, push and pull
+- MCP JSON-RPC endpoint at /mcp
+- Tool discovery with tools/list
 - Health endpoint
-- Standalone Windows EXE packaging
+- Standalone Windows x64 EXE
+- Automated Windows EXE smoke test
+
+## Run
+Set DINOENGINE_ROOT to the project DinoEngine should control, then run DinoEngine.exe.
+
+Default endpoint:
+http://127.0.0.1:4387
+
+MCP endpoint:
+http://127.0.0.1:4387/mcp
+
+The engine is localhost-only by default.
