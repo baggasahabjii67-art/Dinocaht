@@ -1,16 +1,21 @@
 {
-  "name":"dinoengine",
-  "version":"0.6.0",
-  "private":true,
-  "description":"DinoEngine GPT-controlled visual web development, animation and artifact engine with MCP bridge",
-  "main":"server.js",
-  "bin":"server.js",
-  "scripts":{
-    "start":"node server.js",
-    "package:win":"pkg . --targets node18-win-x64 --output release/DinoEngine.exe",
-    "package:win:clean":"powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-win.ps1",
-    "dev":"node server.js"
+  "name": "dinoengine",
+  "version": "0.7.0",
+  "private": true,
+  "description": "DinoEngine GPT-controlled professional web, visual design, Godot 2D and artifact engine with MCP bridge",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "package:win": "pkg . --targets node18-win-x64 --output release/DinoEngine.exe",
+    "package:win:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-win.ps1",
+    "dev": "node server.js"
   },
-  "engines":{"node":">=18"},
-  "devDependencies":{"@yao-pkg/pkg":"^6.6.0"}
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.6.0",
+    "rcedit": "^4.0.1"
+  }
 }
