@@ -1245,6 +1245,38 @@ main{
 
 
 /* =========================================================
+   EXTRA SOCIAL FEATURES
+   ========================================================= */
+function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]));}
+function featureButton(label,action,extra=""){return `<button class="btn ${extra}" data-action="${action}">${label}</button>`}
+
+async function loadAchievements(){
+    const box=document.getElementById("achievementsList"); if(!box)return;
+    if(isGuest){box.innerHTML='<div class="guest-lock-card"><strong>🔒 Dino ID required</strong><p>Achievements are shown in the Dino Score system, but progress belongs to a permanent Dino ID.</p><button class="btn primary" onclick="openGuestModal()">Get Dino ID</button></div>';return;}
+    try{const d=await apiFetch("/api/achievements"); const list=d.achievements||d||[]; box.innerHTML=list.length?list.map(a=>`<div class="row"><div><strong>${esc(a.title||a.name||a.id)}</strong><div style="color:var(--muted);font-size:12px">${esc(a.description||a.text||"")}</div></div><span class="status-pill">${a.unlocked||a.earned||a.completed?"✓ Unlocked":"Locked"}</span></div>`).join(""):"<div class='empty-chat'>No achievements yet.</div>";}catch(e){box.innerHTML=`<div class="empty-chat">${esc(e.message)}</div>`;}
+}
+async function loadFriends(){
+    const req=document.getElementById("friendRequests"), list=document.getElementById("friendsList"); if(!req||!list)return;
+    if(isGuest){req.innerHTML=list.innerHTML='<div class="guest-lock-card"><strong>🔒 Dino ID required</strong><p>Friend requests and friends are account features.</p><button class="btn primary" onclick="openGuestModal()">Get Dino ID</button></div>';return;}
+    try{const d=await apiFetch("/api/friends"); const requests=d.requests||d.friendRequests||[]; const friends=d.friends||[]; req.innerHTML=requests.length?requests.map(r=>`<div class="row"><span>${esc(r.username||r.fromUsername||r.dinoId||"Dino")}</span><button class="btn primary" onclick="acceptFriend('${esc(r.id||r.requestId)}')">Accept</button></div>`).join(""):"<span class='status-pill'>No pending requests</span>"; list.innerHTML=friends.length?friends.map(f=>`<div class="row"><span><strong>${esc(f.username||"Dino")}</strong><br><small class="dino-id-chip">${esc(f.dinoId||"")}</small></span><span class="status-pill">Friend</span></div>`).join(""):"<span class='status-pill'>No friends yet</span>";}catch(e){req.innerHTML=list.innerHTML=`<span class='status-pill'>${esc(e.message)}</span>`;}
+}
+async function sendFriend(){if(!requireDinoId())return;const id=document.getElementById("friendDinoId").value.trim().toUpperCase();if(!id)return toastGuest("Enter a Dino ID");try{await apiFetch("/api/friends/request",{method:"POST",body:JSON.stringify({dinoId:id})});toastGuest("Friend request sent");document.getElementById("friendDinoId").value="";loadFriends();}catch(e){alert(e.message);}}
+async function acceptFriend(id){if(!requireDinoId())return;try{await apiFetch(`/api/friends/${encodeURIComponent(id)}/accept`,{method:"POST"});loadFriends();}catch(e){alert(e.message);}}
+
+async function loadSocial(){const box=document.getElementById("socialList");if(!box)return;if(isGuest){box.innerHTML='<div class="guest-lock-card"><strong>🔒 Dino ID required</strong><p>Posting and tracking social content requires an account.</p><button class="btn primary" onclick="openGuestModal()">Get Dino ID</button></div>';return;}try{const d=await apiFetch("/api/social");const list=d.content||d.socialContent||d||[];box.innerHTML=list.length?list.map(x=>`<div class="row"><div><strong>${esc(x.type||"Social")}</strong><div style="color:var(--muted);font-size:12px">${esc(x.url||"")}</div><small>${Number(x.views||x.dinoViews||0)} Dino views</small></div><button class="btn" onclick="openSocial('${esc(x.url||"")}','${esc(x.id||"")}')">Open</button></div>`).join(""):"<div class='empty-chat'>No shared links yet.</div>";}catch(e){box.innerHTML=`<div class='empty-chat'>${esc(e.message)}</div>`;}}
+async function submitSocial(){if(!requireDinoId())return;const url=document.getElementById("socialUrl").value.trim(),type=document.getElementById("socialType").value;if(!url)return;try{await apiFetch("/api/social",{method:"POST",body:JSON.stringify({url,type})});toastGuest("Social link added");document.getElementById("socialUrl").value="";loadSocial();}catch(e){alert(e.message);}}
+async function openSocial(url,id){if(id&&!isGuest){try{await apiFetch(`/api/social/${encodeURIComponent(id)}/view`,{method:"POST"});}catch(e){}}window.open(url,"_blank","noopener,noreferrer");}
+
+function renderChessBoard(){const b=document.getElementById("chessBoard");if(!b)return;const pieces={0:"♜",1:"♞",2:"♝",3:"♛",4:"♚",5:"♝",6:"♞",7:"♜",8:"♟",9:"♟",10:"♟",11:"♟",12:"♟",13:"♟",14:"♟",15:"♟",48:"♙",49:"♙",50:"♙",51:"♙",52:"♙",53:"♙",54:"♙",55:"♙",56:"♖",57:"♘",58:"♗",59:"♕",60:"♔",61:"♗",62:"♘",63:"♖"};b.innerHTML=Array.from({length:64},(_,i)=>`<div class="chess-square ${(Math.floor(i/8)+i)%2?'dark':'light'}">${pieces[i]||""}</div>`).join("");}
+async function loadBets(){renderChessBoard();const box=document.getElementById("betList"),ctrl=document.getElementById("activeBetControls");if(!box)return;if(isGuest){box.innerHTML='<div class="guest-lock-card"><strong>🔒 Dino ID required</strong><p>Betting uses your Dino Score and permanent Dino ID.</p><button class="btn primary" onclick="openGuestModal()">Get Dino ID</button></div>';ctrl.innerHTML="";return;}try{const d=await apiFetch("/api/chess/bets");const list=d.bets||d||[];box.innerHTML=list.length?list.map(x=>`<div class="row"><div><strong>${esc(x.status||"Bet")}</strong><div style="font-size:12px;color:var(--muted)">${esc(x.creatorDinoId||x.fromDinoId||"")} vs ${esc(x.opponentDinoId||x.toDinoId||"")}</div></div><span class="status-pill">Stake ${Number(x.stake||x.amount||0)}</span>${x.status==="pending"?`<button class="btn primary" onclick="acceptBet('${esc(x.id)}')">Accept</button>`:""}</div>`).join(""):"<span class='status-pill'>No bets yet</span>";}catch(e){box.innerHTML=`<span class='status-pill'>${esc(e.message)}</span>`;}}
+async function createBet(){if(!requireDinoId())return;const opponent=document.getElementById("betOpponent").value.trim().toUpperCase(),stake=Number(document.getElementById("betStake").value);if(!opponent||stake<1)return alert("Enter opponent Dino ID and a valid stake.");try{await apiFetch("/api/chess/bets",{method:"POST",body:JSON.stringify({opponentDinoId:opponent,stake})});toastGuest("Chess bet created");loadBets();}catch(e){alert(e.message);}}
+async function acceptBet(id){if(!requireDinoId())return;try{await apiFetch(`/api/chess/bets/${encodeURIComponent(id)}/accept`,{method:"POST"});toastGuest("Bet accepted");loadBets();}catch(e){alert(e.message);}}
+
+document.getElementById("sendFriendButton")?.addEventListener("click",sendFriend);
+document.getElementById("submitSocialButton")?.addEventListener("click",submitSocial);
+document.getElementById("createBetButton")?.addEventListener("click",createBet);
+
+/* =========================================================
    GUEST MODE
    ========================================================= */
 .guest-badge{
@@ -1317,6 +1349,37 @@ main{
         grid-template-columns:1fr;
     }
 }
+
+
+/* =========================================================
+   DINOSOCIAL / BET / FRIENDS / ACHIEVEMENTS
+   ========================================================= */
+.feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.feature-card{padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--card2)}
+.feature-card h3{margin:0 0 7px}
+.feature-card p{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.5}
+.feature-actions{display:flex;gap:8px;flex-wrap:wrap}
+.feature-actions .btn{flex:0 0 auto}
+.list-stack{display:grid;gap:10px}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:var(--soft);color:var(--primary);font-size:11px;font-weight:800}
+.locked-action{opacity:.82}
+.bet-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bet-form .full{grid-column:1/-1}
+.chess-board{display:grid;grid-template-columns:repeat(8,1fr);width:min(480px,100%);aspect-ratio:1;border:2px solid var(--border);border-radius:12px;overflow:hidden;margin-top:15px}
+.chess-square{display:grid;place-items:center;font-size:clamp(17px,4vw,30px);user-select:none}
+.chess-square.light{background:color-mix(in srgb,var(--soft) 70%,var(--bg))}
+.chess-square.dark{background:color-mix(in srgb,var(--primary) 22%,var(--bg))}
+.dino-id-chip{font-family:monospace;font-weight:900;letter-spacing:.4px}
+@media(max-width:900px){.feature-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.feature-grid,.bet-form{grid-template-columns:1fr}.bet-form .full{grid-column:auto}}
+
+/* Dark themes: no white panels. Every surface stays deep/dark. */
+html[data-dark="gold"]{--button-text:#1b1405}
+html[data-dark="blue"]{--button-text:#07111e}
+html:not([data-dark]){--button-text:#ffffff}
+.btn.primary,.send-button{color:var(--button-text)!important}
+html[data-dark="gold"] .card,html[data-dark="gold"] .feature-card,html[data-dark="gold"] .item,html[data-dark="gold"] .auth-card,html[data-dark="gold"] .guest-modal-card{box-shadow:0 12px 40px rgba(0,0,0,.35)}
+html[data-dark="blue"] .card,html[data-dark="blue"] .feature-card,html[data-dark="blue"] .item,html[data-dark="blue"] .auth-card,html[data-dark="blue"] .guest-modal-card{box-shadow:0 12px 40px rgba(0,0,0,.4)}
 
 </style>
 </head>
@@ -1492,6 +1555,14 @@ main{
             >
                 🏆 Dino Scores
             </button>
+
+            <button class="nav" data-page="achievements">🏅 Achievements</button>
+
+            <button class="nav" data-page="friends">👥 Friends</button>
+
+            <button class="nav" data-page="social">📸 Social Hub</button>
+
+            <button class="nav" data-page="bet">♟️ Bet</button>
 
             <button
                 class="nav"
@@ -2333,6 +2404,37 @@ main{
                  ACCOUNT
             ================================================== -->
 
+            <section class="page" id="page-achievements">
+                <div class="page-head"><div><span class="badge">🏅 MILESTONES</span><h1>Achievements</h1><p>Earn permanent achievements as your Dino journey grows.</p></div></div>
+                <div class="card"><div id="achievementsList" class="list-stack"><div class="empty-chat">Loading achievements…</div></div></div>
+            </section>
+
+            <section class="page" id="page-friends">
+                <div class="page-head"><div><span class="badge">👥 CONNECTIONS</span><h1>Friends</h1><p>Send requests using a permanent Dino ID. Friends do not replace the public Dinosaur chat.</p></div></div>
+                <div class="feature-grid">
+                    <div class="feature-card"><h3>➕ Add a Dino</h3><p>Send a friend request by Dino ID.</p><label class="input-label">Dino ID</label><input class="input" id="friendDinoId" placeholder="DINO-123456"><div class="feature-actions" style="margin-top:10px"><button class="btn primary" id="sendFriendButton">Send Request</button></div></div>
+                    <div class="feature-card"><h3>📨 Requests</h3><p>Review incoming friend requests.</p><div id="friendRequests" class="list-stack"><span class="status-pill">Loading…</span></div></div>
+                    <div class="feature-card"><h3>🧑‍🤝‍🧑 Your Friends</h3><p>Your confirmed DinoChat connections.</p><div id="friendsList" class="list-stack"><span class="status-pill">Loading…</span></div></div>
+                </div>
+            </section>
+
+            <section class="page" id="page-social">
+                <div class="page-head"><div><span class="badge">📸 SOCIAL HUB</span><h1>Social Links</h1><p>Submit Instagram or Snapchat links and track DinoChat views.</p></div></div>
+                <div class="feature-grid">
+                    <div class="feature-card"><h3>🔗 Share a Social Link</h3><p>Only Instagram and Snapchat hostnames are accepted.</p><label class="input-label">Link</label><input class="input" id="socialUrl" placeholder="https://instagram.com/... or https://snapchat.com/..."><label class="input-label">Type</label><select class="input" id="socialType"><option value="instagram">Instagram</option><option value="snapchat">Snapchat</option></select><div class="feature-actions" style="margin-top:10px"><button class="btn primary" id="submitSocialButton">Submit Link</button></div></div>
+                    <div class="feature-card" style="grid-column:span 2"><h3>👀 Shared Content</h3><p>Open shared content from inside DinoChat.</p><div id="socialList" class="list-stack"><span class="status-pill">Loading…</span></div></div>
+                </div>
+            </section>
+
+            <section class="page" id="page-bet">
+                <div class="page-head"><div><span class="badge">♟️ DINO BET</span><h1>Chess Bet</h1><p>Virtual Dino Score only. No real money. Create or accept a stake, then settle the match.</p></div></div>
+                <div class="feature-grid">
+                    <div class="feature-card"><h3>🎯 Create a Bet</h3><p>Choose an opponent and stake Dino Score.</p><div class="bet-form"><div><label class="input-label">Opponent Dino ID</label><input class="input" id="betOpponent" placeholder="DINO-123456"></div><div><label class="input-label">Stake</label><input class="input" id="betStake" type="number" min="1" step="1" placeholder="10"></div><div class="full feature-actions"><button class="btn primary" id="createBetButton">Create Chess Bet</button></div></div></div>
+                    <div class="feature-card"><h3>♟️ Chess Board</h3><p>The bet system is connected to your Dino Score balance. Gameplay/settlement controls appear with an active bet.</p><div id="chessBoard" class="chess-board"></div><div id="activeBetControls" style="margin-top:12px"></div></div>
+                    <div class="feature-card"><h3>📜 Bet History</h3><p>See pending and completed virtual bets.</p><div id="betList" class="list-stack"><span class="status-pill">Loading…</span></div></div>
+                </div>
+            </section>
+
             <section
                 class="page"
                 id="page-account"
@@ -2882,7 +2984,9 @@ function applyTheme(){
     document.documentElement.style.setProperty("--muted", dark ? "#aeb9c8" : "#688073");
     document.documentElement.style.setProperty("--card", dark ? "#111a27" : "#ffffff");
     document.documentElement.style.setProperty("--card2", dark ? "#0d1622" : "#f7fdf9");
-    document.documentElement.style.setProperty("--border", dark ? "#26384d" : "#cde6d6");
+    document.documentElement.style.setProperty("--border", dark ? (state.theme === "darkGold" ? "#4b3a16" : "#1e3d63") : "#cde6d6");
+    document.documentElement.dataset.dark = state.theme === "darkGold" ? "gold" : state.theme === "darkBlue" ? "blue" : "";
+    document.documentElement.style.setProperty("--button-text", dark ? (state.theme === "darkGold" ? "#1b1405" : "#07111e") : "#ffffff");
 }
 
 function setTheme(themeName){
@@ -2904,6 +3008,10 @@ const pageNames = {
     reels:"Reels & Snaps",
     history:"History",
     scores:"Dino Scores",
+    achievements:"Achievements",
+    friends:"Friends",
+    social:"Social Hub",
+    bet:"Bet",
     account:"Account",
     settings:"Settings"
 };
@@ -2939,6 +3047,10 @@ function openPage(page){
         renderScores();
         renderGuestScoreBanner();
     }
+    if(page === "achievements") loadAchievements();
+    if(page === "friends") loadFriends();
+    if(page === "social") loadSocial();
+    if(page === "bet") loadBets();
     if(page === "account") renderAccount();
     if(page === "settings") renderThemes();
 }
