@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - dinoengine-v9
+      - dinoengine-v8
   workflow_dispatch:
 jobs:
   build-windows:
@@ -24,8 +25,7 @@ jobs:
       - name: Apply DinoEngine dinosaur icon
         shell: powershell
         run: |
-          magick "assets/dinoengine-icon.svg" -background none -define icon:auto-resize=256,128,64,48,32,16 "assets/dinoengine-icon.ico"
-          npx rcedit "release/DinoEngine.exe" --set-icon "assets/dinoengine-icon.ico"
+          if (Test-Path "assets/dinoengine-icon.ico") { npx rcedit "release/DinoEngine.exe" --set-icon "assets/dinoengine-icon.ico" } else { Write-Host "ICO asset not present; keeping EXE build icon." }
       - name: Verify
         shell: powershell
         run: |
