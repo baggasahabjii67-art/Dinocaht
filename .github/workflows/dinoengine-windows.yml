@@ -1,0 +1,47 @@
+name: Build DinoEngine Windows EXE
+
+on:
+  push:
+    branches:
+      - dinoengine-v3
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: dinoengine
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: dinoengine/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build EXE
+        run: npm run package:win
+
+      - name: Verify EXE
+        shell: powershell
+        run: |
+          if (-not (Test-Path "release/DinoEngine.exe")) {
+            throw "DinoEngine.exe was not created."
+          }
+          Get-Item "release/DinoEngine.exe" | Format-List Name,Length,FullName
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: DinoEngine-Windows-x64
+          path: dinoengine/release/DinoEngine.exe
+          if-no-files-found: error
+          retention-days: 30
